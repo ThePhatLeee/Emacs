@@ -1,0 +1,82 @@
+{
+  config,
+  pkgs,
+  inputs,
+  ...
+}:
+{
+  imports = [
+    ./hardware-configuration.nix
+    ../../modules/cli-tui
+    ../../modules/shared
+    ../../modules/security
+    ../../services/empirica
+    ../../modules/secrets-empirica.nix
+  ];
+
+  services.homelab.enable = true;
+
+  networking.hostName = "empirica";
+
+  boot.loader.systemd-boot.enable = true;
+  boot.loader.efi.canTouchEfiVariables = true;
+
+  users.groups.phatle = { };
+
+  users.users.phatle = {
+    isNormalUser = true;
+    description = "Joshua Blais";
+    group = "phatle";
+    extraGroups = [
+      "networkmanager"
+      "wheel"
+    ];
+  };
+
+  users.users.immich = {
+    isSystemUser = true;
+    group = "immich";
+    extraGroups = [ "phatle" ]; # Add to phatle's group
+    description = "Immich photo management service";
+  };
+
+  security.sudo.extraRules = [
+    {
+      users = [ "phatle" ];
+      commands = [
+        {
+          command = "ALL";
+          options = [ "NOPASSWD" ];
+        }
+      ];
+    }
+  ];
+
+  time.timeZone = "America/Edmonton";
+  i18n.defaultLocale = "en_CA.UTF-8";
+
+  services.openssh.enable = true;
+
+  # Disable all systemd sleep/suspend/hibernate targets
+  systemd.targets = {
+    sleep.enable = false;
+    suspend.enable = false;
+    hibernate.enable = false;
+    hybrid-sleep.enable = false;
+  };
+
+  # Configure systemd-logind to ignore power events
+  services.logind.settings = {
+    Login = {
+      HandlePowerKey = "ignore";
+      IdleAction = "ignore";
+    };
+  };
+
+  # Prevent automatic suspension
+  powerManagement = {
+    enable = false; # Disable NixOS power management entirely
+  };
+
+  system.stateVersion = "25.05";
+}

@@ -1,0 +1,16 @@
+# -*- mode: snippet -*-
+# name: frontmatter
+# key: fm
+# condition: t
+# --
+#+TITLE: `(file-name-base (buffer-file-name))`
+#+DATE: ${1:`(format-time-string "%Y-%m-%d")`}
+#+DESCRIPTION: ${2:Brief description for SEO}
+#+DRAFT: ${3:false}
+#+FILETAGS: ${4:primary-tag} ${5:secondary-tag}
+#+OPTIONS: toc:${6:t}
+#+EXPORT_FILE_NAME: `(file-name-base (buffer-file-name))`
+#+LASTMOD: ${7:}
+#+SHARE: ${8:true}
+#+GISCUS: ${9:true}
+#+OGIMAGE: ${10:true}

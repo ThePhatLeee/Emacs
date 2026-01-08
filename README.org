@@ -1,0 +1,325 @@
+#+title: Joshua Blais' Nix Configuration
+
+[[https://nixos.org][https://img.shields.io/badge/NixOS-unstable-blue.svg?style=flat-square&logo=NixOS&logoColor=white]]
+
+#+BEGIN_QUOTE
+*Disclaimer:* I have no idea what I am doing, so take all of this with a grain (massive boulder) of salt.
+#+END_QUOTE
+
+
+* Introduction
+This +is+ *used to be* a literate file using [[https://orgmode.org/][org-mode]] to [[https://orgmode.org/manual/Extracting-Source-Code.html][tangle]] all code blocks to various *.nix files across the configuration. I am used to one, massive (partially) organized file (see my [[https://github.com/jblais493/nixos-config/blob/master/dotfiles/doom/config.org][Emacs Configuration]]), so this seemed natural: Documentation and configuration all in one file? How nice.
+
+*Edit: This file got way too big to parse and has now been split up logically.*
+
+What this ends up being is, quite literally, the *One REPO to Rule Them All*: My *entire computing landscape is declared* right where you are looking. This is the power of Nix.
+
+[[https://nixos.org/][NixOS]] is what I would refer to as "[[https://joshblais.com/blog/nixos-is-the-endgame-of-distrohopping/][the endgame of systems management]]". I have used various distributions of Linux in the past, and while I have no gripes with the likes of Debian, Fedora, or Arch, I have always forgotten configuration settings in the past, struggled to maintain multiple machines without drift, or had breaking changes on each and every distro.
+
+NixOS offers the bleeding edge with the stable, allowing easy rollbacks of any issues, allowing me to  continue on with work and then fix things at a later date if I have a breaking change. This is increasingly important as I host various projects and services for a broader audience and cannot deal with any downtime.
+
+What makes this possible is:
+- [[https://nixos.org/][NixOS]]
+- [[https://github.com/nix-community/home-manager][home-manager]]
+- [[https://github.com/serokell/deploy-rs][deploy-rs]]
+- [[https://github.com/nix-community/nixos-anywhere][nixos-anywhere]]
+- [[https://orgmode.org/][org-mode]] (this document)
+
+Excited yet? Let us begin...
+** Setting this all up
+*** Local Installation (Laptops/Desktops)
+1. Obtain [[https://nixos.org/download/][installation media for nixOS]].
+2. Flash .iso to flash drive using ~dd~ or similar tool:
+   #+begin_src bash
+   dd if=nixos-minimal-xx.xx.iso of=/dev/sdX bs=4M status=progress
+   #+end_src
+3. Boot up installer and connect to internet
+4. Partition your drives (example for UEFI systems):
+   #+begin_src bash
+   # Create partitions
+   parted /dev/nvme0n1 -- mklabel gpt
+   parted /dev/nvme0n1 -- mkpart primary 512MiB -8GiB
+   parted /dev/nvme0n1 -- mkpart primary linux-swap -8GiB 100%
+   parted /dev/nvme0n1 -- mkpart ESP fat32 1MiB 512MiB
+   parted /dev/nvme0n1 -- set 3 esp on
+
+   # Format partitions
+   mkfs.ext4 -L nixos /dev/nvme0n1p1
+   mkswap -L swap /dev/nvme0n1p2
+   mkfs.fat -F 32 -n boot /dev/nvme0n1p3
+
+   # Mount filesystems
+   mount /dev/disk/by-label/nixos /mnt
+   mkdir -p /mnt/boot
+   mount /dev/disk/by-label/boot /mnt/boot
+   swapon /dev/nvme0n1p2
+   #+end_src
+5. Generate hardware configuration:
+   #+begin_src bash
+   nixos-generate-config --root /mnt
+   #+end_src
+6. Clone this repository:
+   #+begin_src bash
+   cd /mnt/home
+   git clone https://github.com/jblais493/nixos-config.git
+   #+end_src
+7. Copy the generated hardware configuration:
+   #+begin_src bash
+   cp /mnt/etc/nixos/hardware-configuration.nix /mnt/home/nixos-config/hosts/YOUR_HOST/
+   #+end_src
+8. Edit the host configuration to match your setup:
+   #+begin_src bash
+   # Edit hostname and any host-specific settings
+   nano /mnt/home/nixos-config/hosts/YOUR_HOST/configuration.nix
+   #+end_src
+9. Test the configuration:
+   #+begin_src bash
+   cd /mnt/home/nixos-config
+   nix flake check
+   #+end_src
+10. Install NixOS:
+    #+begin_src bash
+    nixos-install --flake .#YOUR_HOST
+    #+end_src
+11. Reboot and enjoy your declarative system!
+
+*** Installation on VPS/headless servers
+For automated server deployments, use [[https://nix-community.github.io/nixos-anywhere/quickstart.html][nixos-anywhere]].
+
+Quick server setup:
+#+begin_src bash
+# Install nixos-anywhere
+nix run github:nix-community/nixos-anywhere -- \
+  --flake .#YOUR_SERVER_HOST \
+  root@your-server-ip
+#+end_src
+
+* Dotfiles
+This directory contains all dotfiles for the programs and tooling I use. I previously used [[https://www.gnu.org/software/stow/][Stow]] to organize all these config files, but now use home-manager's ~mkOutOfStoreSymlink~ to sym link and keep these files organized within this one config - simplification is beautiful. See the section on the home-manager module below.
+
+#+begin_src bash
+❯ tree -d -L 2
+├── btop
+│   └── themes
+├── doom
+│   ├── lisp
+│   ├── private
+│   ├── snippets
+│   └── themes
+├── fastfetch
+├── gowall
+├── hypr
+│   └── scripts
+├── kitty
+├── mpd
+│   └── playlists
+├── mpv
+├── nvim
+│   ├── lua
+│   ├── scripts
+│   └── snippets
+├── starship
+├── +STORE
+│   └── dictionary
+├── swaync
+│   └── styles
+├── tmux
+│   └── plugins
+├── tridactyl
+├── waybar
+│   ├── modules
+│   └── scripts
+├── wofi
+├── yt-dlp
+├── zathura
+└── zsh
+#+end_src
+
+* Hosts
+** Theologica
+** King
+** Axios
+** Empirica
+** Phone
+*** Nix-on-droid
+Using Nix-on-droid, you can create and manage a declarative termux environment
+
+* Modules
+** Home-manager
+I use [[https://github.com/nix-community/home-manager][home-manager]] to manage all dotfiles that require customization. I don't agree with rewriting my configs when you can just symlink them using ~mkOutOfStoreSymlink~
+*** default.nix
+Pulls in all modules for home-manager systems (desktops/workstations/laptops)
+*** dotfiles.nix
+Adds in MkOutOfStore for immediate update when dotfiles are edited
+*** activation.nix
+Scripts to setup a new machine with directories in their correct locations.
+*** theming.nix
+Defines system theming for all applications
+*** firefox.nix
+This configures extensions and settings in firefox
+
+** Development
+*** default.nix
+Basic development packages for ease of development and deployment.
+*** base.nix
+*** go.nix
+*** rust.nix
+*** python.nix
+*** doom.nix
+Emacs configuration using DOOM emacs.
+
+To setup doom emacs on any new machine:
+#+begin_src bash
+git clone --depth 1 https://github.com/doomemacs/doomemacs ~/.emacs.d
+~/.emacs.d/bin/doom install
+
+# Get dotfiles into correct location
+nixos-rebuild switch 
+
+# run initial doom sync
+doomsync
+#+end_src
+
+** CLI/TUI
+*** default.nix
+Imports all cli-tui utilities for daily drivers.
+*** shell
+**** tmux.nix
+Tmux setup for servers/desktops
+***** Packages
+- tmux
+- tmuxifier
+**** zsh.nix
+ZSH setup. Used across all machines
+***** packages
+- starship
+- fzf
+- fd
+- ripgrep
+***** notes
+I will keep the aliases in my .zshrc as it is portable across systems rather than nixifying the aliases etc.
+*** core-utils.nix
+**** packages
+- eza
+- bat
+- fd
+- ripgrep-all
+- zoxide
+- fzf
+- yazi
+- tree
+- zip
+- unzip
+- jq
+- rsync
+- coreutils
+**** notes
+
+*** git.nix
+All git related configuration
+**** packages
+- git
+- tea
+- lazygit
+**** notes
+All git configuration is done here. No longer using .gitconfig
+
+*** neovim.nix
+Neovim installed
+**** packages
+- neovim
+
+*** network.nix
+Networking related CLI/TUIs
+*** nix.nix
+Nix packages for quality of life and enhancing nixOS
+*** podman.nix
+Podman service - **not needed on most machines
+*** security.nix
+GPG/age and password-store
+*** system-tools.nix
+system tooling
+
+** Desktop
+*** default.nix
+This declares all desktop modules for importing to desktop/laptops.
+*** hyprland.nix (system module)
+Hyprland setup
+*** kmonad.nix
+Kmonad setup for keyboard layout using Colemak DH and various enhancements.
+*** fonts.nix
+Font setup, Alegreya for reading, Geist for monospace, montserrat for professional.
+*** audio.nix
+Piplewire, alsa, other minor audio tweaks
+*** bluetooth.nix
+Bluetooth services for desktops
+*** printing.nix
+Setup printing availability for desktop machines.
+*** browsers.nix
+Brave and Tor browsers.
+*** applications.nix
+Various desktop applications for comms, files, etc.
+*** display-manager.nix
+Login screen.
+*** storage.nix
+Dealing with automatic mounting of drives, creating new ISOs etc.
+*** theming.nix
+Setting nord theming and styles. Replace packages here for setting your own custom theme.
+*** boot.nix
+This sets up boot screens and adds logos with plymouth
+*** power.nix
+Enables power settings and modules for laptops (we can pull this out in the future for a laptop profile)
+*** email.nix
+Setting up email in mu4e in emacs, packages necessary:
+*** gaming.nix
+Add OSRS Runelite 
+
+** Shared
+*** default.nix
+*** networking.nix
+** Server
+*** Empirica
+**** default.nix
+Defines all services running on our homelab
+** Security
+*** default.nix
+*** fail2ban.nix
+*** keychain.nix
+** Media
+*** default.nix
+*** music.nix
+** Secrets
+This will define secrets decryption for desktops
+*** secrets-phatle
+Secrets for user phatle
+*** secrets-empirica
+Secrets for homelab machine
+* Overlays
+* Secrets
+We manage secrets with [[https://github.com/ryantm/agenix][agenix]].
+
+The workflow for adding a secret is as follows:
+1. Add secret to secrets.nix - specify which keys can decrypt it
+2. Create the secret: agenix -e new-secret.age
+3. Rekey existing secrets if you added new machines: agenix -r
+4. Deploy: Your NixOS systems will automatically decrypt the secrets they have keys for
+
+You can retrieve Machine SSH keys by running ~cat /etc/ssh/ssh_host_ed25519_key.pub~ in any Linux machine with ssh enabled.
+** secrets.nix
+Create an age key for each of your machines using:
+#+begin_src bash
+age-keygen -o key.txt
+#+end_src
+
+and include the public key with the machine:
+#+begin_src bash
+age-keygen -y key.txt
+#+end_src
+and add that machine to the group.
+
+Also, add the public key to the .age-recipients file in the root directory.
+
+I generally keep secrets at the machine level, the user "phatle" is my main user and thus has access to all keys.
+
+* flake.nix
+Defines all machines as a flake, inputs etc. and where we deploy.
