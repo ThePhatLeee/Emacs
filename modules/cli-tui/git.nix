@@ -7,10 +7,10 @@
       user = {
         name = "Marko Jokinen";
         email = "thephatle@proton.com";
-        signingkey = "";
+        signingkey = "null";
       };
-      commit.gpgsign = true;
-      tag.gpgsign = true;
+      commit.gpgsign = false;
+      tag.gpgsign = false;
       core = {
         editor = "nvim";
         autocrlf = "input";
@@ -34,6 +34,8 @@
 
       # GitHub configuration
       github.user = "ThePhatLeee";
+      # Codeberg configuration
+      codeberg.user = "ThePhatLe";
 
       # URL rewriting - force SSH for all forges
       url."git@github.com:".insteadOf = "https://github.com/";
