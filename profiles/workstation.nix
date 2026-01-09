@@ -9,8 +9,8 @@
     ../modules/shared
   ];
 
-  time.timeZone = lib.mkDefault "America/Edmonton";
-  i18n.defaultLocale = "en_CA.UTF-8";
+  time.timeZone = lib.mkDefault "Europe/Helsinki";
+  i18n.defaultLocale = "en_GB.UTF-8";
   boot.loader.systemd-boot.configurationLimit = 20;
 
   # Optimizations
