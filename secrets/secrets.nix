@@ -1,20 +1,21 @@
 let
   # Your personal age key (from ~/.config/age/keys.txt
-  #phatle = "age1k0sc4ugaxzpav2rs8cmugwthaa3tpuzygvax8u84m6sm9ldh737qspv058";
+  phatle = "age1krccquqdzltve5qa5mtl2e44jtkhvfpe9g8wrkutk69w675tg3ysneq4l4";
 
   # Machine age keys
-  #empirica = "age1gt2m3dtrkx3lwnddwv62fesadyd5pkmadtwtdfwvcs4lhcyqt33qfq386s";
+  nixos = "age1tv9ws7tdvqm2k035766qmnwg5av7hxqkcegt68gwt6cyphs68fmsf82tdt";
 
   # Groups for convenience
-  #users = [ phatle ];
-  #servers = [ empirica ];
-  #allSystems = users ++ servers;
+  users = [ phatle ];
+  servers = [ nixos ];
+  allSystems = users ++ servers;
 in
 {
-  #"canlock.age".publicKeys = users;
-  #"gnus-name.age".publicKeys = users;
-  #"gnus-email.age".publicKeys = users;
-  #"restic-password.age".publicKeys = users;
-  #"storagebox.age".publicKeys = users;
-  #"miniflux-admin.age".publicKeys = servers;
-}
+  "canlock.age".publicKeys = users;
+  "gnus-name.age".publicKeys = users;
+  "gnus-email.age".publicKeys = users;
+  "restic-password.age".publicKeys = users;
+  "storagebox.age".publicKeys = users;
+  "github.age".publicKeys = users;
+  "codeberg.age".publicKeys = users;
+  }
