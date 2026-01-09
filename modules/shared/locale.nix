@@ -1,9 +1,9 @@
 { ... }:
 {
-  i18n.defaultLocale = "en_CA.UTF-8";
+  i18n.defaultLocale = "en_GB.UTF-8";
 
   i18n.extraLocaleSettings = {
-    LC_TIME = "en_CA.UTF-8";
-    LC_MONETARY = "en_CA.UTF-8";
+    LC_TIME = "fi_FI.UTF-8";
+    LC_MONETARY = "fi_FI.UTF-8";
   };
 }
