@@ -45,7 +45,7 @@
         {
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;
-          home-manager.users.joshua = import ./modules/home-manager;
+          home-manager.users.phatle = import ./modules/home-manager;
           home-manager.extraSpecialArgs = { inherit inputs; };
           home-manager.backupFileExtension = "backup";
         }
