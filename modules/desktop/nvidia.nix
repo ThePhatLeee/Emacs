@@ -20,7 +20,7 @@
 
     powerManagement = {
       enable = true;
-      finegrained = true;
+      finegrained = false;
     };
 
     # Extra juice for the 3050 Ti when it IS active
