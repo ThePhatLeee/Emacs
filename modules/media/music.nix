@@ -4,7 +4,7 @@
     # Music players
     mpc
     ncmpcpp
-    spotify
+    youtube-music
     spotdl
     # Audio tools
     audacity

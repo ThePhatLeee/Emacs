@@ -1,6 +1,8 @@
 { config, pkgs, ... }:
 {
   environment.systemPackages = with pkgs; [
-    runelite
+    steam
+    heroic
+    lutris
   ];
 }

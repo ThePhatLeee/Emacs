@@ -7,10 +7,10 @@
       user = {
         name = "Marko Jokinen";
         email = "thephatle@proton.com";
-        signingkey = "null";
+        signingkey = "09D801B2351193B1";
       };
-      commit.gpgsign = false;
-      tag.gpgsign = false;
+      commit.gpgsign = true;
+      tag.gpgsign = true;
       core = {
         editor = "nvim";
         autocrlf = "input";
@@ -54,9 +54,8 @@
       mf-init = "!f() { REPO=$1; git remote add github git@github.com:jblais493/$REPO.git; git remote add codeberg git@codeberg.org:phatleblais/$REPO.git; git remote add forgejo git@forge.labrynth.org:josh/$REPO.git; echo 'Multi-forge remotes configured'; git remote -v; }; f";
 
       # Individual remote additions
-      add-github = "!f() { git remote add github git@github.com:jblais493/$1.git; }; f";
-      add-codeberg = "!f() { git remote add codeberg git@codeberg.org:phatleblais/$1.git; }; f";
-      add-forgejo = "!f() { git remote add forgejo git@forge.labrynth.org:josh/$1.git; }; f";
+      add-github = "!f() { git remote add github git@github.com:ThePhatLeee/$1.git; }; f";
+      add-codeberg = "!f() { git remote add codeberg git@codeberg.org:ThePhatLe/$1.git; }; f";
 
       # Convenience
       st = "status -sb";

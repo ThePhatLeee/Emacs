@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 
 # Directory containing wallpapers
-WALLPAPER_DIR="$HOME/Pictures"
+WALLPAPER_DIR="$HOME/nixos-config/wallpapers/"
 
 # Use wofi to select a wallpaper
 selected_wallpaper=$(ls -1 "$WALLPAPER_DIR" | grep -E "\.(jpg|jpeg|png|gif)$" | wofi --dmenu -p "Select wallpaper")

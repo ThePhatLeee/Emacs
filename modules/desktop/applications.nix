@@ -7,6 +7,8 @@
 
     # Graphics and image optimizations
     gimp3-with-plugins
+    inkscape
+    darktable
     libwebp
     libavif
     mozjpeg
@@ -18,6 +20,7 @@
 
     # Productivity
     libreoffice
+    protonmail-bridge
 
     # System utilities
     brightnessctl
@@ -27,7 +30,7 @@
     usbutils
 
     # VPN
-    mullvad-vpn
+    proton-vpn-cli
 
     # Others
     qbittorrent
@@ -42,7 +45,8 @@
   # users.users.phatle.extraGroups = [ "adbusers" ];
 
   services.resolved.enable = true;
-  services.mullvad-vpn.enable = true;
+  services.proton-vpn-cli.enable = true;
+  services.protonmail-bridge.enable
   programs.kdeconnect.enable = true;
 
   systemd.user.services.kdeconnect = {
@@ -91,7 +95,7 @@
     settings = {
       devices = {
         "phone" = {
-          id = "TTUKVRU-FEJGUXM-SERMOTN-TJNRQKV-7QP2N5J-V3ESDBE-5WTKB4K-2LCGDA3";
+          id = "";
         };
       };
     };
@@ -119,8 +123,5 @@
   #};
 
   networking.firewall = {
-    interfaces."tailscale0" = {
-      allowedTCPPorts = [ 5232 ];
-    };
   };
 }
