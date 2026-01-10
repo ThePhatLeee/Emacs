@@ -24,7 +24,7 @@
     };
 
     # Extra juice for the 3050 Ti when it IS active
-    dynamicBoost.enable = true;
+    dynamicBoost.enable = false;
 
     # We are removing the explicit PRIME Bus IDs to see if
     # Plasma Wayland handles it automatically as suggested.
