@@ -45,7 +45,7 @@
         {
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;
-          home-manager.users.phatle = import ./modules/home-manager;
+          home-manager.users.joshua = import ./modules/home-manager;
           home-manager.extraSpecialArgs = { inherit inputs; };
           home-manager.backupFileExtension = "backup";
         }
@@ -75,24 +75,14 @@
       # System configurations
       nixosConfigurations = {
         # Personal machines (desktop environment)
-        theologica = mkHost "theologica" desktop;
-        logos = mkHost "logos" desktop;
-        king = mkHost "king" desktop;
-        axios = mkHost "axios" desktop;
-        nixos = mkHost "nixos" desktop;
+         nixos = mkHost "nixos" desktop;
 
         # Server infrastructure (headless)
-        empirica = mkHost "empirica" base;
+        
       };
 
       # Remote deployment targets
-      deploy.nodes = {
-        empirica = mkDeploy "empirica" {
-          sshUser = "phatle";
-          hostname = "192.168.0.28";
-        };
-      };
-
+      
       # Deployment validation checks
       checks = builtins.mapAttrs (_: deployLib: deployLib.deployChecks self.deploy) inputs.deploy-rs.lib;
     };

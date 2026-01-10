@@ -16,6 +16,7 @@
     ./hyprland.nix
     ./kmonad.nix
     ./networking.nix
+    ./nvidia.nix
     ./power.nix
     ./printing.nix
     ./storage.nix
