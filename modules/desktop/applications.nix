@@ -45,7 +45,7 @@
   # users.users.phatle.extraGroups = [ "adbusers" ];
 
   services.resolved.enable = true;
-  services.proton-vpn-cli.enable = true;
+  #services.proton-vpn-cli.enable = true;
   services.protonmail-bridge.enable = true;
   programs.kdeconnect.enable = true;
 
