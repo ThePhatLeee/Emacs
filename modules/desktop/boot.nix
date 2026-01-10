@@ -17,6 +17,15 @@
     "systemd.show_status=auto"
   ];
 
+    boot.blacklistedKernelModules = [
+    "nouveau"
+    "nvidiafb"
+    "nova"      # The base module
+    "nova-core" # The specific core binder
+    "nova_core" # Alternative naming convention
+  ];
+
+
   boot.consoleLogLevel = 0;
 
   # Fast boot timeout (updated option name)
