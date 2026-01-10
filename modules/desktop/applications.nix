@@ -46,7 +46,7 @@
 
   services.resolved.enable = true;
   services.proton-vpn-cli.enable = true;
-  services.protonmail-bridge.enable;
+  services.protonmail-bridge.enable = true;
   programs.kdeconnect.enable = true;
 
   systemd.user.services.kdeconnect = {
