@@ -40,24 +40,9 @@
       };
     };
 
-    # Thermal management
-    thermald.enable = true;
-    services.fstrim.enable = true; # Crucial for NVMe SSD health
-    hardware.sensor.iio.enable = true;
-
-    # Memory Optimization (ZRAM)
-    zramSwap = {
-      enable = true;
-      algorithm = "zstd";
-      memoryPercent = 50;
-      priority = 100;
-    };
     
-   services.udev.extraRules = ''
-      ACTION=="add|change", KERNEL=="nvme[0-9]n[0-9]", ATTR{queue/scheduler}="none"
-      ACTION=="add|change", KERNEL=="nvme[0-9]n[0-9]", ATTR{queue/read_ahead_kb}="2048"
-    '';
- 
+        
+    
 
 
     # Firmware updates
@@ -89,6 +74,24 @@
       libva-vdpau-driver
     ];
   };
+  
+  # Memory Optimization (ZRAM)
+    zramSwap = {
+      enable = true;
+      algorithm = "zstd";
+      memoryPercent = 50;
+      priority = 100;
+    };
+
+
+  services.thermald.enable = true;
+  services.fstrim.enable = true; # Crucial for NVMe SSD health
+  hardware.sensor.iio.enable = true;
+
+  services.udev.extraRules = ''
+      ACTION=="add|change", KERNEL=="nvme[0-9]n[0-9]", ATTR{queue/scheduler}="none"
+      ACTION=="add|change", KERNEL=="nvme[0-9]n[0-9]", ATTR{queue/read_ahead_kb}="2048"
+    '';
 
 
   # AMD microcode

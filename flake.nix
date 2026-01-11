@@ -48,6 +48,9 @@
       desktop = base ++ [
         inputs.supernote-tools.nixosModules.default
         inputs.home-manager.nixosModules.home-manager
+        inputs.nixos-hardware.nixosModules.dell-xps-15-9510-nvidia
+        inputs.lanzaboote.nixosModules.lanzaboote
+
         {
           home-manager.useGlobalPkgs = true;
           home-manager.useUserPackages = true;

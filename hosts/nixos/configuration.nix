@@ -17,8 +17,8 @@ in
       ./nvidia.nix
       ./security.nix
       ../../profiles/workstation.nix
-      inputs.nixos-hardware.nixosModules.dell-xps-15-9510-nvidia
-      inputs.lanzaboote.nixosModules.lanzaboote
+      #nixos-hardware.nixosModules.dell-xps-15-9510-nvidia
+      #lanzaboote.nixosModules.lanzaboote
 
     ];
   

@@ -30,10 +30,6 @@
     pkiBundle = "/var/lib/sbctl";
   };
 
-
-  # Fast boot timeout (updated option name)
-  boot.loader.timeout = 1;
-
   # Beautiful GRUB theme
   boot.loader.grub.theme = pkgs.nixos-grub2-theme;
 
@@ -47,13 +43,14 @@ boot.initrd = {
     kernelModules = [ "tpm_tis" ];
     verbose = false;
     luks.devices = {
-        "cryptroot".device = "/dev/disk/by-uuid/0ebd4574-226c-4520-b4ad-5713d80f03fd";
+        "cryptroot" = {
         device = "/dev/disk/by-uuid/0ebd4574-226c-4520-b4ad-5713d80f03fd";
-        crypttabExtraOpts = [ "tpm2-device=auto" "tpm2-measure-pcr=yes" ];
+        
+        # These options MUST be inside this "cryptroot" block
         allowDiscards = true;
         bypassWorkqueues = true;
+        crypttabExtraOpts = [ "tpm2-device=auto" "tpm2-measure-pcr=yes" ];
       };
       };
     };
-
 }
