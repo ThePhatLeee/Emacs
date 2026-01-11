@@ -25,6 +25,7 @@
     # Productivity
     libreoffice
     protonmail-bridge
+    proton-pass
 
     # System utilities
     sbctl
