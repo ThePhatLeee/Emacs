@@ -4,8 +4,13 @@
   inputs = {
     # Core
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    nixpkgs-stable.url = "github:NixOS/nixpkgs/nixos-25.05";
+    nixpkgs-stable.url = "github:NixOS/nixpkgs/nixos-25.11";
     nur.url = "github:nix-community/NUR";
+    nix-index-database.url = "github:nix-community/nix-index-database";
+    nixos-hardware.url = "github:NixOS/nixos-hardware/master";
+    lanzaboote.url = "github:nix-community/lanzaboote/v1.0.0";
+
+
 
     # Tools
     disko.url = "github:nix-community/disko";
@@ -26,6 +31,7 @@
     deploy-rs.inputs.nixpkgs.follows = "nixpkgs";
     agenix.inputs.nixpkgs.follows = "nixpkgs";
     supernote-tools.inputs.nixpkgs.follows = "nixpkgs";
+    nix-index-database.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs =

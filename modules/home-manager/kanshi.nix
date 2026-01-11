@@ -48,5 +48,22 @@
       }
     ];
   };
+
+    # --- HYPRLAND INPUT FIX ---
+  systemd.user.services.hyprland-input-fix = {
+    Unit = {
+      Description = "Force Hyprland input re-scan and UI refresh";
+      After = [ "graphical-session.target" ];
+      PartOf = [ "graphical-session.target" ];
+    };
+    Service = {
+      Type = "oneshot";
+      ExecStart = "${pkgs.hyprland}/bin/hyprctl reload";
+    };
+    Install = {
+      WantedBy = [ "hyprland-session.target" ];
+    };
+  };
+
 }
 

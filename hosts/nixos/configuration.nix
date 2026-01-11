@@ -4,11 +4,22 @@
 
 { config, lib, pkgs, ... }:
 
+let
+  sources = import ./lon.nix;
+  lanzaboote = import sources.lanzaboote { inherit pkgs; };
+in
+
+
 {
-  imports =
+ imports =
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
+      ./nvidia.nix
+      ./security.nix
       ../../profiles/workstation.nix
+      inputs.nixos-hardware.nixosModules.dell-xps-15-9510-nvidia
+      inputs.lanzaboote.nixosModules.lanzaboote
+
     ];
   
   fileSystems."/swap" = {

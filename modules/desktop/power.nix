@@ -42,6 +42,23 @@
 
     # Thermal management
     thermald.enable = true;
+    services.fstrim.enable = true; # Crucial for NVMe SSD health
+    hardware.sensor.iio.enable = true;
+
+    # Memory Optimization (ZRAM)
+    zramSwap = {
+      enable = true;
+      algorithm = "zstd";
+      memoryPercent = 50;
+      priority = 100;
+    };
+    
+   services.udev.extraRules = ''
+      ACTION=="add|change", KERNEL=="nvme[0-9]n[0-9]", ATTR{queue/scheduler}="none"
+      ACTION=="add|change", KERNEL=="nvme[0-9]n[0-9]", ATTR{queue/read_ahead_kb}="2048"
+    '';
+ 
+
 
     # Firmware updates
     fwupd.enable = true;
@@ -62,6 +79,17 @@
     enable = true;
     powertop.enable = true;
   };
+    # Intel Graphics & Media Acceleration
+    hardware.graphics = {
+    enable = true;
+    extraPackages = with pkgs; [
+      intel-media-driver
+      intel-compute-runtime
+      libvdpau-va-gl
+      libva-vdpau-driver
+    ];
+  };
+
 
   # AMD microcode
   hardware.cpu.amd.updateMicrocode = true;

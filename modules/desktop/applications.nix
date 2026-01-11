@@ -2,10 +2,14 @@
 {
   environment.systemPackages = with pkgs; [
     # File managers
-    xfce.thunar
-    xfce.tumbler
+    thunar
+    tumbler
 
     # Graphics and image optimizations
+    (blender.override { cudaSupport = true; })
+    cudaPackages.cuda_cudart
+    cudaPackages.cuda_nvcc
+    cudaPackages.cudnn
     gimp3-with-plugins
     inkscape
     darktable
@@ -23,6 +27,8 @@
     protonmail-bridge
 
     # System utilities
+    sbctl
+    lon
     brightnessctl
     libnotify
     xdg-utils

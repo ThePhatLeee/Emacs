@@ -2,6 +2,7 @@
 {
  # Enable automatic mounting of USB drives
   services.udisks2.enable = true;
+  
 
   # Enable GVFS for desktop integration
   services.gvfs.enable = true;
