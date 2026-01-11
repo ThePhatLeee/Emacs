@@ -6,7 +6,7 @@
       init.defaultBranch = "main";
       user = {
         name = "Marko Jokinen";
-        email = "thephatle@proton.com";
+        email = "thephatle@proton.me";
         signingkey = "09D801B2351193B1";
       };
       commit.gpgsign = true;
