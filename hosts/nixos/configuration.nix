@@ -32,8 +32,8 @@ in
     allowDiscards = true;
     bypassWorkqueues = true;
     crypttabExtraOpts = [ 
-      "tpm2-device=auto" 
-      "tpm2-pcrs=0+2+7+15"  # PCR 0+2+7+15 configuration
+      "tpm2-device=auto"
+      "tpm2-pcrs=0+2+7+12"  # PCR 0+2+7+15 configuration
     ];
   };
   

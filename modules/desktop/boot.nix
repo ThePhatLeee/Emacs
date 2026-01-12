@@ -92,8 +92,8 @@
       allowDiscards = true;
       bypassWorkqueues = true;
       crypttabExtraOpts = [ 
-        "tpm2-device=auto"
-        "tpm2-pcrs=0+2+7+15"  # Default PCR configuration
+        "tpm2-device=auto" 
+        "tpm2-pcrs=0+2+7+12"  # Default PCR configuration
       ];
     };
   };
