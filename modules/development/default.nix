@@ -6,5 +6,10 @@
     ./go.nix
     ./python.nix
     ./rust.nix
+    ./web.nix       
+    ./php.nix       
+    ./cpp.nix       
+    ./lua.nix       
+    ./markup.nix
   ];
 }

@@ -539,6 +539,85 @@
         :localleader
         "a" #'my/archive-done-task))
 
+(defun +calendar/open-calendar ()
+  "Open calfw calendar with org integration."
+  (interactive)
+  (require 'calfw)
+  (require 'calfw-org)
+  
+  ;; Apply Compline faces
+  (custom-set-faces!
+   '(cfw:face-title :foreground "#e0dcd4" :weight bold :height 1.2)
+   '(cfw:face-header :foreground "#b8c4b8" :weight bold)
+   '(cfw:face-sunday :foreground "#cdacac" :weight bold)
+   '(cfw:face-saturday :foreground "#b4c0c8" :weight bold)
+   '(cfw:face-grid :foreground "#282c34")
+   '(cfw:face-today :background "#171a1e" :weight bold)
+   '(cfw:face-select :background "#282c34" :foreground "#f0efeb")
+   '(cfw:face-schedule :foreground "#b8c4b8")
+   '(cfw:face-deadline :foreground "#cdacac"))
+  
+  (calfw-org-open-calendar))
+
+;; Prevent byte-compilation of this function
+(put '+calendar/open-calendar 'byte-compile 'byte-compile-file-form-defmumble)
+
+(after! org
+  (defvar my/contacts-file "~/org/roam/contacts.org")
+  
+  (defun my/contacts-get-emails ()
+    "Extract all emails from contacts.org."
+    (let (contacts)
+      (with-current-buffer (find-file-noselect my/contacts-file)
+        (org-with-wide-buffer
+         (goto-char (point-min))
+         (while (re-search-forward "^\\*+ \\(.+\\)$" nil t)
+           (let ((name (match-string 1))
+                 (email (org-entry-get (point) "EMAIL")))
+             (when email
+               (dolist (addr (split-string email "," t " "))
+                 (push (cons name (string-trim addr)) contacts)))))))
+      (nreverse contacts)))
+  
+  (defun my/contacts-complete ()
+    "Complete email addresses from contacts.org."
+    (let* ((end (point))
+           (start (save-excursion
+                    (skip-chars-backward "^:,; \t\n")
+                    (point)))
+           (contacts (my/contacts-get-emails))
+           (collection (mapcar 
+                       (lambda (contact)
+                         (format "%s <%s>" (car contact) (cdr contact)))
+                       contacts)))
+      (list start end collection :exclusive 'no)))
+  
+  (add-hook 'message-mode-hook
+            (lambda ()
+              (setq-local completion-at-point-functions
+                          (cons 'my/contacts-complete
+                                completion-at-point-functions)))))
+
+(after! mu4e
+  (setq mu4e-compose-complete-addresses nil)
+  
+  (defun my/update-last-contacted ()
+    (when (and (derived-mode-p 'mu4e-compose-mode)
+               mu4e-compose-parent-message)
+      (when-let* ((from (mu4e-message-field mu4e-compose-parent-message :from))
+                  (email (if (stringp from) from (cdar from))))
+        (when (stringp email)
+          (with-current-buffer (find-file-noselect my/contacts-file)
+            (save-excursion
+              (goto-char (point-min))
+              (when (search-forward email nil t)
+                (org-back-to-heading)
+                (org-set-property "LAST_CONTACTED" 
+                                (format-time-string "[%Y-%m-%d %a %H:%M]"))
+                (save-buffer))))))))
+  
+  (add-hook 'mu4e-compose-mode-hook #'my/update-last-contacted))
+
 (use-package! org-roam
   :defer t
   :commands (org-roam-node-find 
@@ -870,6 +949,31 @@ This function is designed to be called via `emacsclient -e`."
               (setq-local company-backends
                           '((company-capf :with company-yasnippet)
                             company-files)))))
+;; Python LSP
+(add-hook 'python-mode-hook #'lsp-deferred)
+
+;; PHP LSP  
+(add-hook 'php-mode-hook #'lsp-deferred)
+
+;; C/C++ LSP
+(add-hook 'c-mode-hook #'lsp-deferred)
+(add-hook 'c++-mode-hook #'lsp-deferred)
+
+;; C# LSP
+(add-hook 'csharp-mode-hook #'lsp-deferred)
+
+;; Lua LSP
+(add-hook 'lua-mode-hook #'lsp-deferred)
+
+;; Markdown LSP
+(add-hook 'markdown-mode-hook #'lsp-deferred)
+
+;; YAML LSP
+(add-hook 'yaml-mode-hook #'lsp-deferred)
+
+;; Tailwind LSP (already have web-mode, add CSS)
+(add-hook 'css-mode-hook #'lsp-deferred)
+(add-hook 'scss-mode-hook #'lsp-deferred)
 
 (after! project
   ;; Master project detection function - extensible for all project types

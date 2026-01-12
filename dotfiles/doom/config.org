@@ -1066,6 +1066,32 @@ This function is designed to be called via `emacsclient -e`."
               (setq-local company-backends
                           '((company-capf :with company-yasnippet)
                             company-files)))))
+;; Python LSP
+(add-hook 'python-mode-hook #'lsp-deferred)
+
+;; PHP LSP  
+(add-hook 'php-mode-hook #'lsp-deferred)
+
+;; C/C++ LSP
+(add-hook 'c-mode-hook #'lsp-deferred)
+(add-hook 'c++-mode-hook #'lsp-deferred)
+
+;; C# LSP
+(add-hook 'csharp-mode-hook #'lsp-deferred)
+
+;; Lua LSP
+(add-hook 'lua-mode-hook #'lsp-deferred)
+
+;; Markdown LSP
+(add-hook 'markdown-mode-hook #'lsp-deferred)
+
+;; YAML LSP
+(add-hook 'yaml-mode-hook #'lsp-deferred)
+
+;; Tailwind LSP (already have web-mode, add CSS)
+(add-hook 'css-mode-hook #'lsp-deferred)
+(add-hook 'scss-mode-hook #'lsp-deferred)
+
 #+end_src
 
 ** Project Detection
