@@ -1,12 +1,17 @@
+# modules/desktop/power.nix
+# Power management and optimization for desktop/laptop systems
+
 { config, lib, pkgs, ... }:
 
 {
-  # Disable conflicting power management
+  # === DISABLE CONFLICTING SERVICES ===
+  
   services.power-profiles-daemon.enable = false;
 
-  # Core power management
+  # === CORE POWER MANAGEMENT ===
+  
   services = {
-    # Essential power monitoring
+    # Battery monitoring
     upower = {
       enable = true;
       percentageLow = 15;
@@ -15,7 +20,7 @@
       criticalPowerAction = "Hibernate";
     };
 
-    # TLP for battery optimization
+    # TLP for advanced power management
     tlp = {
       enable = true;
       settings = {
@@ -23,11 +28,19 @@
         CPU_SCALING_GOVERNOR_ON_AC = "performance";
         CPU_SCALING_GOVERNOR_ON_BAT = "powersave";
 
-        # AMD Ryzen optimizations
+        # Energy performance policy
         CPU_ENERGY_PERF_POLICY_ON_AC = "performance";
         CPU_ENERGY_PERF_POLICY_ON_BAT = "power";
+        
+        # CPU boost
+        CPU_BOOST_ON_AC = 1;
+        CPU_BOOST_ON_BAT = 0;
+        
+        # Platform profiles
+        PLATFORM_PROFILE_ON_AC = "performance";
+        PLATFORM_PROFILE_ON_BAT = "low-power";
 
-        # Basic power saving
+        # WiFi power saving
         WIFI_PWR_ON_AC = "off";
         WIFI_PWR_ON_BAT = "on";
 
@@ -37,35 +50,59 @@
         # NVMe power management
         DISK_DEVICES = "nvme0n1";
         DISK_APM_LEVEL_ON_BAT = "128";
+        
+        # Runtime power management
+        RUNTIME_PM_ON_AC = "on";
+        RUNTIME_PM_ON_BAT = "auto";
+        
+        # PCIe ASPM
+        PCIE_ASPM_ON_AC = "default";
+        PCIE_ASPM_ON_BAT = "powersupersave";
+        
+        # Sound power save
+        SOUND_POWER_SAVE_ON_AC = 0;
+        SOUND_POWER_SAVE_ON_BAT = 1;
       };
     };
 
-    
-        
-    
-
-
     # Firmware updates
-    fwupd.enable = true;
+    fwupd. enable = true;
+    
+    # Thermal management
+    thermald.enable = true;
+    
+    # SSD TRIM
+    fstrim.enable = true;
   };
 
-  # Essential tools
-  environment.systemPackages = with pkgs; [
+  # === POWER MANAGEMENT ===
+  
+  powerManagement = {
+    enable = true;
+    powertop. enable = true;
+  };
+
+  # === ESSENTIAL TOOLS ===
+  
+  environment. systemPackages = with pkgs; [
     powertop
     acpi
     lm_sensors
+    intel-gpu-tools
   ];
 
-  # AMD-specific kernel parameter
-  boot.kernelParams = [ "amd_pstate=active" ];
-
-  # Basic power management
-  powerManagement = {
-    enable = true;
-    powertop.enable = true;
-  };
-    # Intel Graphics & Media Acceleration
-    hardware.graphics = {
+  # === CPU-SPECIFIC KERNEL PARAMETERS ===
+  # Both AMD and Intel params - kernel uses appropriate one
+  
+  boot.kernelParams = [ 
+    "amd_pstate=active"    # For AMD (ignored on Intel)
+    # intel_pstate already in boot.nix
+  ];
+  
+  # === INTEL GRAPHICS ===
+  # Ignored on AMD systems
+  
+  hardware.graphics = {
     enable = true;
     extraPackages = with pkgs; [
       intel-media-driver
@@ -75,25 +112,51 @@
     ];
   };
   
-  # Memory Optimization (ZRAM)
-    zramSwap = {
-      enable = true;
-      algorithm = "zstd";
-      memoryPercent = 50;
-      priority = 100;
-    };
+  # === ZRAM SWAP ===
+  # Compressed swap in RAM (much faster than disk)
+  
+  zramSwap = {
+    enable = true;
+    algorithm = "zstd";
+    memoryPercent = 50;
+    priority = 100;  # Higher priority than disk swap
+  };
 
-
-  services.thermald.enable = true;
-  services.fstrim.enable = true; # Crucial for NVMe SSD health
+  # === CPU MICROCODE ===
+  # Both enabled - only applicable one loads
+  
+  hardware.cpu.amd.updateMicrocode = lib.mkDefault true;
+  hardware.cpu.intel.updateMicrocode = lib.mkDefault true;
+  
+  # === IIO SENSOR SUPPORT ===
+  # Accelerometer, etc.
+  
   hardware.sensor.iio.enable = true;
 
+  # === NVME OPTIMIZATIONS ===
+  
   services.udev.extraRules = ''
-      ACTION=="add|change", KERNEL=="nvme[0-9]n[0-9]", ATTR{queue/scheduler}="none"
-      ACTION=="add|change", KERNEL=="nvme[0-9]n[0-9]", ATTR{queue/read_ahead_kb}="2048"
-    '';
-
-
-  # AMD microcode
-  hardware.cpu.amd.updateMicrocode = true;
+    # NVMe:  use none scheduler (it has its own queue management)
+    ACTION=="add|change", KERNEL=="nvme[0-9]n[0-9]", ATTR{queue/scheduler}="none"
+    ACTION=="add|change", KERNEL=="nvme[0-9]n[0-9]", ATTR{queue/read_ahead_kb}="2048"
+    ACTION=="add|change", KERNEL=="nvme[0-9]n[0-9]", ATTR{queue/nr_requests}="1024"
+    
+    # NVMe power management
+    ACTION=="add|change", KERNEL=="nvme[0-9]*", ATTR{power/control}="auto"
+  '';
+  
+  # === MEMORY MANAGEMENT ===
+  
+  boot.kernel.sysctl = {
+    # Swap behavior (prefer zram)
+    "vm.swappiness" = 10;
+    "vm.vfs_cache_pressure" = 50;
+    
+    # Dirty memory ratios
+    "vm.dirty_ratio" = 10;
+    "vm.dirty_background_ratio" = 5;
+    
+    # Optimize for desktop
+    "vm.page-cluster" = 0;
+  };
 }

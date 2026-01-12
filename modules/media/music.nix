@@ -4,8 +4,7 @@
     # Music players
     mpc
     ncmpcpp
-    youtube-music
-    spotdl
+    pear-desktop
     # Audio tools
     audacity
     # Audio codecs

@@ -1,11 +1,20 @@
-{ config, pkgs, lib, ... }:
+# modules/desktop/networking.nix
+# Network configuration and hardening for desktop systems
+
+{ config, pkgs, lib, ... }: 
+
 {
-  # Enable NetworkManager
- 
+  # === NETWORK MANAGER ===
+  
   networking.networkmanager = {
     enable = true;
+    dns = "systemd-resolved";  # Use systemd-resolved for DNS
+    
     settings = {
-      device."wifi.scan-rand-mac-address" = "yes";
+      # WiFi privacy
+      device."wifi. scan-rand-mac-address" = "yes";
+      
+      # MAC address randomization
       connection = {
         "ipv6.ip-token" = "stable-privacy";
         "ethernet.cloned-mac-address" = "random";
@@ -14,27 +23,90 @@
     };
   };
 
-    networking.firewall = {
+  # === FIREWALL ===
+  
+  networking.firewall = {
     enable = true;
     allowPing = false;
     checkReversePath = "strict";
     trustedInterfaces = [ "lo" ];
+    logRefusedConnections = true;
+    logRefusedPackets = false;  # Too verbose
   };
 
+  # === KERNEL NETWORK HARDENING ===
+  
   boot.kernel.sysctl = {
+    # Performance
     "net.core.default_qdisc" = "fq";
     "net.ipv4.tcp_congestion_control" = "bbr";
+    
+    # IPv6 privacy extensions
     "net.ipv6.conf.all.use_tempaddr" = lib.mkForce 2;
     "net.ipv6.conf.default.use_tempaddr" = lib.mkForce 2;
-    "kernel.sched_autogroup_enabled" = 0;
+    
+    # IP forwarding (disabled)
+    "net.ipv4.ip_forward" = 0;
+    "net.ipv6.conf.all.forwarding" = 0;
+    
+    # ICMP security
+    "net.ipv4.icmp_echo_ignore_broadcasts" = 1;
+    "net.ipv4.icmp_ignore_bogus_error_responses" = 1;
+    
+    # Redirect protection
     "net.ipv4.conf.all.accept_redirects" = 0;
+    "net.ipv4.conf.default.accept_redirects" = 0;
+    "net.ipv6.conf.all.accept_redirects" = 0;
+    "net.ipv6.conf.default.accept_redirects" = 0;
+    "net.ipv4.conf. all.secure_redirects" = 0;
+    "net. ipv4.conf.default. secure_redirects" = 0;
+    "net.ipv4.conf.all.send_redirects" = 0;
+    "net.ipv4.conf.default.send_redirects" = 0;
+    
+    # Source routing (disabled)
+    "net.ipv4.conf.all.accept_source_route" = 0;
+    "net.ipv4.conf.default.accept_source_route" = 0;
+    "net.ipv6.conf.all.accept_source_route" = 0;
+    "net.ipv6.conf.default.accept_source_route" = 0;
+    
+    # Reverse path filtering
+    "net.ipv4.conf.all.rp_filter" = 1;
+    "net.ipv4.conf. default.rp_filter" = 1;
+    
+    # Log martians
+    "net.ipv4.conf.all.log_martians" = 1;
+    "net.ipv4.conf.default.log_martians" = 1;
+    
+    # TCP hardening
     "net.ipv4.tcp_syncookies" = 1;
-    "kernel.dmesg_restrict" = 1;
+    "net.ipv4.tcp_rfc1337" = 1;
+    "net.ipv4.tcp_timestamps" = 1;
+    
+    # Disable autogroup scheduling (better for desktop)
+    "kernel.sched_autogroup_enabled" = 0;
   };
 
-
-  # Packages
-  environment.systemPackages = with pkgs; [
+  # === DNS PRIVACY WITH DNS OVER TLS ===
+  # Encrypted DNS queries via systemd-resolved
+  
+ services.resolved = {
+  enable = true;
+  dnssec = "allow-downgrade";
+  
+  extraConfig = ''
+    [Resolve]
+    DNS=1.1.1.1#one.one.one.one 1.0.0.1#one.one.one.one
+    FallbackDNS=9.9.9.9#dns.quad9.net 149.112.112.112#dns.quad9.net
+    DNSOverTLS=yes
+    DNSSEC=allow-downgrade
+    DNSStubListener=yes
+    Cache=yes
+    MulticastDNS=no
+    LLMNR=no
+  '';
+};  # === PACKAGES ===
+  
+  environment. systemPackages = with pkgs; [
     networkmanager
     networkmanagerapplet
   ];

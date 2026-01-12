@@ -1,22 +1,31 @@
-{ config, pkgs, ... }:
-{
-  fonts = {
-    packages = with pkgs; [
-      alegreya
-      # New nerd-fonts namespace
-      nerd-fonts.geist-mono
-      montserrat
-      # Add any other fonts you need
-    ];
+# modules/desktop/fonts.nix
+# Font packages and configuration
 
-    # Font configuration
-    fontconfig = {
-      enable = true;
-      defaultFonts = {
-        serif = [ "Alegreya" ];
-        sansSerif = [ "Montserrat" ];
-        monospace = [ "GeistMono Nerd Font" ];
-      };
+{ config, pkgs, lib, ...  }:
+
+{
+  # Font packages
+  fonts.packages = with pkgs; [
+    alegreya
+    nerd-fonts.geist-mono
+    montserrat
+    noto-fonts
+    noto-fonts-cjk-sans
+    noto-fonts-cjk-serif
+    noto-fonts-color-emoji
+    liberation_ttf
+    fira-code
+    fira-code-symbols
+    jetbrains-mono
+  ];
+
+  # Font configuration
+  fonts. fontconfig = {
+    enable = true;
+    defaultFonts = {
+      serif = [ "Alegreya" ];
+      sansSerif = [ "Montserrat" ];
+      monospace = [ "GeistMono Nerd Font" ];
     };
   };
 }

@@ -1,35 +1,84 @@
-{ config, pkgs, ... }:
-{
- # Enable automatic mounting of USB drives
-  services.udisks2.enable = true;
-  
+# modules/desktop/storage.nix
+# Storage and filesystem defaults for desktop systems
 
-  # Enable GVFS for desktop integration
+{ config, pkgs, lib, ... }: 
+
+{
+  # === USB STORAGE ===
+  
+  services.udisks2.enable = true;
   services.gvfs.enable = true;
 
-  # Force start udisks2
-  systemd.services.udisks2 = {
+  systemd.services. udisks2 = {
     wantedBy = [ "graphical-session.target" ];
   };
 
-  # Additional packages for USB/storage management
+  # === STORAGE PACKAGES ===
+  
   environment.systemPackages = with pkgs; [
     # File manager integration
-    gvfs          # GNOME Virtual File System
-    udisks2       # Disk management service
+    gvfs
+    udisks2
 
     # Disk management tools
-    gnome-disk-utility  # Disk utility GUI with image writing
-    gparted       # Partition editor
+    gnome-disk-utility
+    gparted
 
     # Image writing tools
-    kdePackages.isoimagewriter   # Simple USB image writer
-    # or alternatively:
-    # gnome-multi-writer  # GNOME's USB writer
-    # raspberry-pi-imager # Official Pi imager (works for other images too)
+    kdePackages.isoimagewriter
+    dd_rescue
+    pv
 
-    # Command line tools
-    dd_rescue     # Better dd with error recovery
-    pv            # Progress viewer for dd operations
+    # Btrfs tools
+    btrfs-progs
+    compsize  # Check compression ratios
   ];
+  
+  # === BTRFS OPTIMIZATION DEFAULTS ===
+  # Append optimized mount options to existing filesystem definitions
+  # Uses lib.mkAfter to merge with hardware-configuration.nix settings
+  
+  # Root filesystem - append optimization options
+  fileSystems. "/".options = lib.mkAfter [ 
+    "noatime"              # Don't update access times (performance)
+    "compress=zstd:1"      # Fast compression (level 1)
+    "space_cache=v2"       # Better free space cache
+    "discard=async"        # Async TRIM for SSDs
+    "ssd"                  # SSD-specific optimizations
+    "autodefrag"           # Auto-defragmentation for small files
+  ];
+  
+  # Nix store - higher compression for space savings
+  fileSystems."/nix".options = lib.mkAfter [ 
+    "noatime"
+    "compress=zstd:3"      # Higher compression level
+    "space_cache=v2"
+    "discard=async"
+    "ssd"
+  ];
+  
+  # Home directory
+  fileSystems."/home". options = lib.mkAfter [ 
+    "noatime"
+    "compress=zstd:1"
+    "space_cache=v2"
+    "discard=async"
+    "ssd"
+    "autodefrag"
+  ];
+  
+  # Boot partition - override to secure (use mkForce since this is security-critical)
+  fileSystems."/boot".options = lib. mkForce [ 
+    "fmask=0077"           # Only root can read/write files
+    "dmask=0077"           # Only root can read/write directories
+    "noatime"
+  ];
+  
+  # === BTRFS MAINTENANCE ===
+  
+  services.btrfs.autoScrub = {
+    enable = true;
+    interval = "monthly";
+    fileSystems = [ "/" ];
+  };
 }

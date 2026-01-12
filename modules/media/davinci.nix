@@ -11,12 +11,9 @@
   ];
 
   # Increase file watchers - Resolve uses massive amounts
-  boot.kernel.sysctl = {
-    "fs.inotify.max_user_watches" = 524288;
-    "fs.inotify.max_user_instances" = 512;
-    "fs.file-max" = 2097152;
+ boot.kernel.sysctl = {
+   "fs.file-max" = lib.mkDefault 2097152;
   };
-
   # System resource limits for Resolve
   security.pam.loginLimits = [
     {

@@ -162,7 +162,6 @@ in
   # Disable systemd-resolved stub listener
   services.resolved = {
     enable = true;
-    dnssec = "false";
     extraConfig = ''
       DNSStubListener=no
     '';

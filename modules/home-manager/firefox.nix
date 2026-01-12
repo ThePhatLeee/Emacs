@@ -11,6 +11,18 @@
       DisablePocket = true;
       BlockAboutConfig = false;
       OfferToSaveLogins = false;
+      
+      # Force Firefox to use system DNS (systemd-resolved with DoT)
+      # Instead of Firefox's own DNS over HTTPS
+      DNSOverHTTPS = {
+        Enabled = false;
+        Locked = true;
+      };
+      
+      # Use system proxy settings (includes DNS)
+      NetworkPrediction = {
+        Enabled = false;
+      };
     };
 
     # Native messaging for Tridactyl
@@ -20,15 +32,14 @@
       name = "Default";
       isDefault = true;
 
-      extensions.packages = with pkgs.nur.repos.rycee.firefox-addons; [
+      extensions.packages = with pkgs.nur.repos. rycee.firefox-addons; [
         ublock-origin
-        ];
+      ];
 
       settings = {
-      	
         # Privacy hardening
         "privacy.trackingprotection.enabled" = true;
-        "privacy.trackingprotection.socialtracking.enabled" = true;
+        "privacy. trackingprotection.socialtracking.enabled" = true;
         "privacy.donottrackheader.enabled" = true;
         "datareporting.healthreport.uploadEnabled" = false;
         "datareporting.policy.dataSubmissionEnabled" = false;
@@ -39,13 +50,17 @@
         "browser.cache.disk.enable" = false;
         "browser.sessionstore.privacy_level" = 2;
 
+        # DNS settings - use system resolver
+        "network.trr.mode" = 5;  # 5 = disabled, use system resolver
+        "network.dns.disablePrefetch" = true;
+        "network.predictor.enabled" = false;
+
         # Hyprland/Wayland optimization
-        "widget.use-xdg-desktop-portal.file-picker" = 1;
+        "widget. use-xdg-desktop-portal.file-picker" = 1;
         "gfx.webrender.all" = true;
         "media.ffmpeg.vaapi.enabled" = true;
-        "layers.acceleration.force-enabled" = true;
+        "layers.acceleration. force-enabled" = true;
       };
-
       userChrome = ''
         #TabsToolbar {
           visibility: collapse !important;
