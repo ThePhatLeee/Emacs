@@ -44,41 +44,8 @@
   # Track all security-relevant events
   
   security.auditd.enable = true;
-  security.audit = {
-    enable = true;
-    #rules = [
-      # Authentication monitoring
-    #  "-w /var/log/faillog -p wa -k auth"
-    #  "-w /var/log/lastlog -p wa -k auth"
-      
-      # Identity changes
-    #  "-w /etc/passwd -p wa -k identity"
-    #  "-w /etc/group -p wa -k identity"
-    #  "-w /etc/shadow -p wa -k identity"
-    #  "-w /etc/gshadow -p wa -k identity"
-      
-      # Sudo monitoring
-    #  "-w /etc/sudoers -p wa -k sudoers"
-    #  "-w /etc/sudoers. d/ -p wa -k sudoers"
-      
-      # System config
-    #  "-w /etc/nixos/ -p wa -k nixos_config"
-      
-      # Kernel modules
-    #  "-w /sbin/insmod -p x -k modules"
-    #  "-w /sbin/modprobe -p x -k modules"
-    #  "-w /sbin/rmmod -p x -k modules"
-      
-      # Time changes (fixed syntax)
-    #  "-a always,exit -F arch=b64 -S adjtimex -S settimeofday -S clock_settime -k time_change"
-    #  "-w /etc/localtime -p wa -k time_change"
-      
-      # File deletions (fixed syntax)
-    #  "-a always,exit -F arch=b64 -S unlink -S unlinkat -S rename -S renameat -F auid>=1000 -F auid!=4294967295 -k delete"
-      
-      # Privilege escalation
-    #  "-a always,exit -F arch=b64 -S setuid -F a0=0 -k privilege_escalation"
-    #];
+security.audit = {
+  enable = true;
   };
   # === ADDITIONAL KERNEL HARDENING ===
   
@@ -93,6 +60,92 @@
     "kernel.perf_event_paranoid" = 3;
     "net.core.bpf_jit_harden" = 2;
   };
+
+  # === PAM HARDENING === (NEW)
+  # Stricter file permissions and limits
+  
+  # 1. Login Limits (This part is correct and valid)
+  security.pam.loginLimits = [
+    {
+      domain = "*";
+      type = "hard";
+      item = "nproc";
+      value = "4096";  # Limit processes per user
+    }
+    {
+      domain = "*";
+      type = "hard";
+      item = "nofile";
+      value = "524288";  # Increase file descriptor limit
+    }
+  ];
+
+  # 2. Umask (The syntax changed)
+  # Corrected PAM Umask rules using absolute paths for AppArmor compatibility
+  security.pam.services.login.rules.session.umask = {
+    control = "optional";
+    # CHANGED: Use full path from pkgs.pam
+    modulePath = "${pkgs.pam}/lib/security/pam_umask.so"; 
+    args = [ "umask=0027" ];
+    order = 200;
+  };
+
+  security.pam.services.sshd.rules.session.umask = {
+    control = "optional";
+    # CHANGED: Use full path from pkgs.pam
+    modulePath = "${pkgs.pam}/lib/security/pam_umask.so";
+    args = [ "umask=0027" ];
+    order = 200;
+  };
+  # 3. Sudo Log Permissions
+  systemd.tmpfiles.rules = [
+    "f /var/log/sudo.log 0600 root root - -"
+  ];  
+
+  # === POLKIT SECURITY === 
+  # Require authentication for system operations
+  
+  security.polkit.enable = true;  # Already enabled in theming. nix, this ensures it
+  security.polkit.extraConfig = ''
+    /* Require authentication for system management */
+    polkit.addRule(function(action, subject) {
+      if (action.id. indexOf("org.freedesktop.systemd1.manage-units") == 0 ||
+          action.id.indexOf("org.freedesktop.login1.power-off") == 0 ||
+          action.id.indexOf("org.freedesktop.login1.reboot") == 0 ||
+          action.id.indexOf("org.freedesktop.login1.suspend") == 0) {
+        if (subject.isInGroup("wheel")) {
+          return polkit. Result.AUTH_ADMIN_KEEP;
+        }
+        return polkit.Result.NO;
+      }
+    });
+    
+    /* Restrict mount operations */
+    polkit.addRule(function(action, subject) {
+      if (action.id == "org.freedesktop.udisks2.filesystem-mount-system") {
+        if (subject.isInGroup("wheel")) {
+          return polkit.Result.YES;
+        }
+        return polkit.Result.AUTH_ADMIN;
+      }
+    });
+    
+    /* Restrict network device control */
+    polkit.addRule(function(action, subject) {
+      if (action.id. indexOf("org.freedesktop.NetworkManager.") == 0) {
+        if (subject.isInGroup("wheel") || subject.isInGroup("networkmanager")) {
+          return polkit.Result.YES;
+        }
+        return polkit.Result.AUTH_ADMIN;
+      }
+    });
+  '';
+
+  # === KERNEL IMAGE PROTECTION === (NEW)
+  # Force PTI even if not auto-detected
+  
+  security.forcePageTableIsolation = true;
+
 
 
   # === NETWORKING ===
@@ -130,11 +183,11 @@
 
   # === FIREWALL ===
   
-  networking. firewall. enable = true;
+  networking.firewall. enable = true;
 
   # === SECURITY PACKAGES ===
   
-  environment. systemPackages = with pkgs; [
+  environment.systemPackages = with pkgs; [
     fail2ban
     gnupg
     age

@@ -20,7 +20,7 @@ in
   
   # === HARDWARE-SPECIFIC CONFIGURATION ===
   
-  networking. hostName = "nixos";
+  networking.hostName = "nixos";
   
   # Use latest kernel
   boot.kernelPackages = pkgs.linuxPackages_latest;
@@ -47,6 +47,7 @@ in
   swapDevices = [ { 
     device = "/swap/swapfile"; 
     priority = 0;  # Lower priority than zram (from power.nix)
+    discardPolicy = "once";  # TRIM swapfile at boot
   } ];
   
   # === USER CONFIGURATION ===
@@ -67,6 +68,6 @@ in
   
   # === SYSTEM STATE ===
   
-  system. stateVersion = "25.11";
+  system.stateVersion = "25.11";
 }
 

@@ -5,6 +5,9 @@
 
   # Enable firmware
   hardware.enableAllFirmware = true;
+  # Enable ALL firmware including proprietary
+  hardware.enableRedistributableFirmware = true;
+
 
   # Packages
   environment.systemPackages = with pkgs; [

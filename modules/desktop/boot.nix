@@ -6,7 +6,7 @@
 {
   # === PLYMOUTH BOOT SPLASH ===
   
-  boot. plymouth = {
+  boot.plymouth = {
     enable = true;
     theme = "breeze";
   };
@@ -46,6 +46,8 @@
     
     # Boot
     "boot.shell_on_fail"              # Emergency shell on boot failure
+    "transparent_hugepage=madvise"    # THP only when requested (better performance)
+    "mitigations=auto"                # Auto-enable only needed mitigations (performance)
   ];
 
   boot.consoleLogLevel = 0;
@@ -53,7 +55,7 @@
   # === BOOT LOADER ===
   # Lanzaboote for Secure Boot
   
-  boot.loader. systemd-boot.enable = lib.mkForce false;
+  boot.loader.systemd-boot.enable = lib.mkForce false;
   boot.loader.efi.canTouchEfiVariables = true;
   boot.loader.timeout = 0;  # Instant boot (no menu)
 
@@ -71,9 +73,7 @@
   boot.initrd = {
     # Use systemd in initrd (faster, more reliable)
     systemd.enable = true;
-    
-        
-        
+       
     # TPM kernel module
     kernelModules = [ "tpm_tis" ];
     
@@ -87,7 +87,7 @@
     # LUKS defaults
     # Hosts MUST override the device UUID with their specific value
     # This is just a fallback that will never be used
-    luks.devices. cryptroot = lib.mkDefault {
+    luks.devices.cryptroot = lib.mkDefault {
       device = "/dev/disk/by-uuid/0ebd4574-226c-4520-b4ad-5713d80f03fd";  # Placeholder
       allowDiscards = true;
       bypassWorkqueues = true;
@@ -124,8 +124,11 @@
     "fs.protected_fifos" = 2;
     "fs.suid_dumpable" = 0;
     
-    # Increase inotify limits (for development)
-      };
+    # Increase inotify limits (for development) remove if build fails
+    "fs.inotify.max_user_watches" = 524288;   # Default is 8192 (64x increase)
+    "fs.inotify.max_user_instances" = 512;    # Default is 128 (4x increase)
+    "fs.inotify.max_queued_events" = 32768;   # Default is 16384 (2x increase)
+  };
   
   # === KERNEL MODULE BLACKLIST ===
   # Disable unused/dangerous modules

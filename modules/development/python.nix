@@ -1,26 +1,25 @@
 { config, lib, pkgs, ...  }:
 
 {
-  environment. systemPackages = with pkgs; [
+  environment.systemPackages = with pkgs; [
     # Python
-    python
-    pythonPackages.pip
-    pythonPackages.virtualenv
+    python3
+    python3Packages.pip
+    python3Packages.virtualenv
     
     # Python LSPs
     pyright            # Microsoft Python LSP
     ruff              # Fast Python linter/formatter
-    ruff-lsp          # Ruff LSP
     
     # Formatting/Linting
-    pythonPackages.black
-    pythonPackages.isort
-    pythonPackages.pylint
+    python3Packages.black
+    python3Packages.isort
+    python3Packages.pylint
     
     # Type checking
-    pythonPackages.mypy
+    python3Packages.mypy
     
     # Debugging
-    pythonPackages.debugpy
+    python3Packages.debugpy
   ];
 }

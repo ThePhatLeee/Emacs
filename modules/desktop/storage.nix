@@ -9,7 +9,7 @@
   services.udisks2.enable = true;
   services.gvfs.enable = true;
 
-  systemd.services. udisks2 = {
+  systemd.services.udisks2 = {
     wantedBy = [ "graphical-session.target" ];
   };
 
@@ -39,7 +39,7 @@
   # Uses lib.mkAfter to merge with hardware-configuration.nix settings
   
   # Root filesystem - append optimization options
-  fileSystems. "/".options = lib.mkAfter [ 
+  fileSystems."/".options = lib.mkAfter [ 
     "noatime"              # Don't update access times (performance)
     "compress=zstd:1"      # Fast compression (level 1)
     "space_cache=v2"       # Better free space cache

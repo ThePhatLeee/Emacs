@@ -12,13 +12,13 @@
     
     settings = {
       # WiFi privacy
-      device."wifi. scan-rand-mac-address" = "yes";
+      device."wifi.scan-rand-mac-address" = "yes";
       
       # MAC address randomization
       connection = {
         "ipv6.ip-token" = "stable-privacy";
         "ethernet.cloned-mac-address" = "random";
-        "wifi.cloned-mac-address" = "random";
+        "wifi.cloned-mac-address" = "random"; 
       };
     };
   };
@@ -40,6 +40,23 @@
     # Performance
     "net.core.default_qdisc" = "fq";
     "net.ipv4.tcp_congestion_control" = "bbr";
+
+    # === TCP PERFORMANCE TUNING === 
+    # 10x improvement on fast networks
+    "net.core.rmem_max" = 134217728;           # 128MB receive buffer
+    "net.core.wmem_max" = 134217728;           # 128MB send buffer
+    "net.ipv4.tcp_rmem" = "4096 87380 67108864";  # Min, default, max read
+    "net.ipv4.tcp_wmem" = "4096 65536 67108864";  # Min, default, max write
+    
+    # TCP Fast Open (reduces latency by 1 RTT)
+    "net.ipv4.tcp_fastopen" = 3;  # Enable for both client and server
+    
+    # Connection reuse (faster reconnections)
+    "net.ipv4.tcp_tw_reuse" = 1;
+    
+    # Increase connection backlog
+    "net.core.netdev_max_backlog" = 16384;
+    "net.ipv4.tcp_max_syn_backlog" = 8192;
     
     # IPv6 privacy extensions
     "net.ipv6.conf.all.use_tempaddr" = lib.mkForce 2;
@@ -58,8 +75,8 @@
     "net.ipv4.conf.default.accept_redirects" = 0;
     "net.ipv6.conf.all.accept_redirects" = 0;
     "net.ipv6.conf.default.accept_redirects" = 0;
-    "net.ipv4.conf. all.secure_redirects" = 0;
-    "net. ipv4.conf.default. secure_redirects" = 0;
+    "net.ipv4.conf.all.secure_redirects" = 0;
+    "net.ipv4.conf.default.secure_redirects" = 0;
     "net.ipv4.conf.all.send_redirects" = 0;
     "net.ipv4.conf.default.send_redirects" = 0;
     
@@ -71,7 +88,7 @@
     
     # Reverse path filtering
     "net.ipv4.conf.all.rp_filter" = 1;
-    "net.ipv4.conf. default.rp_filter" = 1;
+    "net.ipv4.conf.default.rp_filter" = 1;
     
     # Log martians
     "net.ipv4.conf.all.log_martians" = 1;
@@ -106,7 +123,7 @@
   '';
 };  # === PACKAGES ===
   
-  environment. systemPackages = with pkgs; [
+  environment.systemPackages = with pkgs; [
     networkmanager
     networkmanagerapplet
   ];

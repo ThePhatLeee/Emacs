@@ -13,6 +13,7 @@
     ./email.nix
     ./fonts.nix
     ./gaming.nix
+    ./health-monitoring.nix
     ./hyprland.nix
     ./kmonad.nix
     ./networking.nix

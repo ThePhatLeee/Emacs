@@ -186,21 +186,29 @@ in
         # CRITICAL: Disable DNSSEC to avoid root key requirement
         module-config = ''"iterator"'';
 
+        tls-cert-bundle = "/etc/ssl/certs/ca-bundle.crt";
+
         include = [ "/etc/unbound/blocked-domains.conf" ];
       };
-
+      
+      
       forward-zone = [
         {
           name = ".";
-          forward-addr = [
-            "1.1.1.1@53"
-            "1.0.0.1@53"
+            forward-tls-upstream = "yes";               # Enable DoT
+            forward-addr = [
+            "1.1.1.1@853#one.one.one.one"              # DoT
+            "1.0.0.1@853#one.one.one.one"              # DoT fallback
+            "9.9.9.9@853#dns.quad9.net"                # DoT fallback 2
+            "149.112.112.112@853#dns.quad9.net"        # DoT fallback 3        
           ];
         }
       ];
     };
   };
 
+  
+  
   systemd.services.distraction-blocker = {
     description = "Time-aware distraction blocker via DNS";
     after = [ "network.target" ];

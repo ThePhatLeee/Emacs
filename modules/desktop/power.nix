@@ -66,7 +66,7 @@
     };
 
     # Firmware updates
-    fwupd. enable = true;
+    fwupd.enable = true;    
     
     # Thermal management
     thermald.enable = true;
@@ -79,12 +79,12 @@
   
   powerManagement = {
     enable = true;
-    powertop. enable = true;
+    powertop.enable = true;
   };
 
   # === ESSENTIAL TOOLS ===
   
-  environment. systemPackages = with pkgs; [
+  environment.systemPackages = with pkgs; [
     powertop
     acpi
     lm_sensors
@@ -143,6 +143,14 @@
     
     # NVMe power management
     ACTION=="add|change", KERNEL=="nvme[0-9]*", ATTR{power/control}="auto"
+
+    # === SATA SSD DETECTION === 
+    ACTION=="add|change", KERNEL=="sd[a-z]", ATTR{queue/rotational}=="0", ATTR{queue/scheduler}="mq-deadline"
+    ACTION=="add|change", KERNEL=="sd[a-z]", ATTR{queue/rotational}=="0", ATTR{queue/read_ahead_kb}="1024"
+    ACTION=="add|change", KERNEL=="sd[a-z]", ATTR{queue/rotational}=="0", ATTR{queue/nr_requests}="256"
+    
+    # Hard drives (rotational) get BFQ (better for HDDs)
+    ACTION=="add|change", KERNEL=="sd[a-z]", ATTR{queue/rotational}=="1", ATTR{queue/scheduler}="bfq"
   '';
   
   # === MEMORY MANAGEMENT ===
@@ -155,6 +163,7 @@
     # Dirty memory ratios
     "vm.dirty_ratio" = 10;
     "vm.dirty_background_ratio" = 5;
+    "vm.dirty_writeback_centisecs" = 1500;  # Reduce write frequency (saves SSD)
     
     # Optimize for desktop
     "vm.page-cluster" = 0;

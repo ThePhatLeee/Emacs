@@ -32,14 +32,14 @@
       name = "Default";
       isDefault = true;
 
-      extensions.packages = with pkgs.nur.repos. rycee.firefox-addons; [
+      extensions.packages = with pkgs.nur.repos.rycee.firefox-addons; [
         ublock-origin
       ];
 
       settings = {
         # Privacy hardening
         "privacy.trackingprotection.enabled" = true;
-        "privacy. trackingprotection.socialtracking.enabled" = true;
+        "privacy.trackingprotection.socialtracking.enabled" = true;
         "privacy.donottrackheader.enabled" = true;
         "datareporting.healthreport.uploadEnabled" = false;
         "datareporting.policy.dataSubmissionEnabled" = false;
@@ -56,7 +56,7 @@
         "network.predictor.enabled" = false;
 
         # Hyprland/Wayland optimization
-        "widget. use-xdg-desktop-portal.file-picker" = 1;
+        "widget.use-xdg-desktop-portal.file-picker" = 1;
         "gfx.webrender.all" = true;
         "media.ffmpeg.vaapi.enabled" = true;
         "layers.acceleration. force-enabled" = true;
