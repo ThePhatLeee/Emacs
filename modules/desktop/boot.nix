@@ -57,7 +57,7 @@
   
   boot.loader.systemd-boot.enable = lib.mkForce false;
   boot.loader.efi.canTouchEfiVariables = true;
-  boot.loader.timeout = 0;  # Instant boot (no menu)
+  boot.loader.timeout = 0;  # Instant boot (no menu, hold space on boot to get boot loader)
 
   boot.lanzaboote = {
     enable = true;

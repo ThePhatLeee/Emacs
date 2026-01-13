@@ -91,7 +91,7 @@
   nix.daemonIOSchedClass = "idle";      # I/O scheduling
   nix.daemonCPUSchedPolicy = "batch";   # CPU scheduling
   
-  systemd.services.nix-daemon. serviceConfig = {
+  systemd.services.nix-daemon.serviceConfig = {
     Nice = lib.mkDefault 10;
     IOSchedulingClass = lib.mkDefault "idle";
   };

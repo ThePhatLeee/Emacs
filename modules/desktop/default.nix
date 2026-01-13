@@ -15,6 +15,7 @@
     ./gaming.nix
     ./health-monitoring.nix
     ./hyprland.nix
+    ./kitty.nix
     ./kmonad.nix
     ./networking.nix
     ./power.nix

@@ -4,7 +4,6 @@
     # Music players
     mpc
     ncmpcpp
-    pear-desktop
     # Audio tools
     audacity
     # Audio codecs

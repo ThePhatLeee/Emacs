@@ -56,13 +56,11 @@
 
   # === AUDIT LOGGING ===
   # Track all security-relevant events
-  services.journald.audit = true;
   security.auditd.enable = true;
   security.audit = {
     enable = true;
     rules = [
     # --- Authentication monitoring ---
-    # NOTE: I have commented these out. Enable them ONLY if you run:
     # `touch /var/log/faillog /var/log/lastlog` to create the files first.
     "-w /var/log/faillog -p wa -k auth"
     "-w /var/log/lastlog -p wa -k auth"
@@ -78,7 +76,7 @@
     "-w /etc/sudoers.d/ -p wa -k sudoers" # FIXED: Removed space in 'sudoers. d/'
 
     # --- System config ---
-    "-w /etc/nixos/ -p wa -k nixos_config"
+    "-w /home/phatle/nixos-config/ -p wa -k nixos_config"
 
     # --- Kernel modules (Fixed for NixOS) ---
     # We watch the syscalls (kernel actions) instead of the /sbin/ files
@@ -145,12 +143,12 @@
   security.polkit.extraConfig = ''
     /* Require authentication for system management */
     polkit.addRule(function(action, subject) {
-      if (action.id. indexOf("org.freedesktop.systemd1.manage-units") == 0 ||
+      if (action.id.indexOf("org.freedesktop.systemd1.manage-units") == 0 ||
           action.id.indexOf("org.freedesktop.login1.power-off") == 0 ||
           action.id.indexOf("org.freedesktop.login1.reboot") == 0 ||
           action.id.indexOf("org.freedesktop.login1.suspend") == 0) {
         if (subject.isInGroup("wheel")) {
-          return polkit. Result.AUTH_ADMIN_KEEP;
+          return polkit.Result.AUTH_ADMIN_KEEP;
         }
         return polkit.Result.NO;
       }
@@ -168,7 +166,7 @@
     
     /* Restrict network device control */
     polkit.addRule(function(action, subject) {
-      if (action.id. indexOf("org.freedesktop.NetworkManager.") == 0) {
+      if (action.id.indexOf("org.freedesktop.NetworkManager.") == 0) {
         if (subject.isInGroup("wheel") || subject.isInGroup("networkmanager")) {
           return polkit.Result.YES;
         }
