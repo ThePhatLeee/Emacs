@@ -56,7 +56,7 @@
 
   # === AUDIT LOGGING ===
   # Track all security-relevant events
-  services.journald.audit = false;
+  services.journald.audit = true;
   security.auditd.enable = true;
   security.audit = {
     enable = true;
