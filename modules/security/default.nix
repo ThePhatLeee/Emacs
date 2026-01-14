@@ -58,6 +58,9 @@
   # Track all security-relevant events
   security.auditd = {
   enable = true;
+  plugins = {
+  };
+
   };
   security.audit = {
     enable = true;
