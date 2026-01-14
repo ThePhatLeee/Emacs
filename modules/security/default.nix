@@ -1,7 +1,17 @@
 # modules/security/default.nix
 # Security hardening defaults for all systems
 
-{ config, pkgs, lib, ... }: 
+{ config, pkgs, lib, ... }:
+
+let
+  # DRY Principle: Define the umask rule once, apply it everywhere.
+  # We use 'mkOrder' to ensure this runs after standard session setup but before user control.
+  umaskRule = lib.mkOrder 200 {
+    control = "optional";
+    modulePath = "${pkgs.pam}/lib/security/pam_umask.so";
+    args = [ "umask=0027" ];
+  };
+in
 
 {
   imports = [
@@ -53,62 +63,53 @@
     "kernel.perf_event_paranoid" = 3;
     "net.core.bpf_jit_harden" = 2;
   };
-
-  # === AUDIT LOGGING ===
-  # Track all security-relevant events
-  security.auditd = {
-  enable = true;
-  plugins = {
-  };
-
-  };
-  security.audit = {
-    enable = true;
-    rules = [
-    ];
-  };
-
+ 
   # === PAM HARDENING === (NEW)
   # Stricter file permissions and limits
   
-  # 1. Login Limits (This part is correct and valid)
+  # 1. SYSTEM LIMITS (DoS Protection)
+  # Prevents fork bombs and resource exhaustion attacks.
   security.pam.loginLimits = [
-    {
-      domain = "*";
-      type = "hard";
-      item = "nproc";
-      value = "4096";  # Limit processes per user
-    }
-    {
-      domain = "*";
-      type = "hard";
-      item = "nofile";
-      value = "524288";  # Increase file descriptor limit
-    }
+    { domain = "*"; item = "nproc"; type = "hard"; value = "4096"; }
+    { domain = "*"; item = "nofile"; type = "hard"; value = "524288"; }
+    # PRO TIP: Lock memory limits for sensitive processes (like GPG/SSH agents) to prevent swapping keys to disk.
+    { domain = "@wheel"; item = "memlock"; type = "hard"; value = "1048576"; }
   ];
 
-  # 2. Umask (The syntax changed)
-  # Corrected PAM Umask rules using absolute paths for AppArmor compatibility
-  security.pam.services.login.rules.session.umask = {
-    control = "optional";
-    # CHANGED: Use full path from pkgs.pam
-    modulePath = "${pkgs.pam}/lib/security/pam_umask.so"; 
-    args = [ "umask=0027" ];
-    order = 200;
+  # 2. BRUTE FORCE PROTECTION (Faillock)
+  # Standard PAM doesn't lock users out by default. This fixes that.
+  security.pam.services.login.faillockConfig = {
+    enable = true;
+    deny = 5;             # Lock after 5 failed attempts
+    unlock_time = 900;    # Lock for 15 minutes
+    interval = 600;       # Reset counter if 10 mins pass without failure
   };
+  
+  # Inherit faillock config for SSHD to prevent online dictionary attacks
+  security.pam.services.sshd.faillockConfig = config.security.pam.services.login.faillockConfig;
 
-  security.pam.services.sshd.rules.session.umask = {
-    control = "optional";
-    # CHANGED: Use full path from pkgs.pam
-    modulePath = "${pkgs.pam}/lib/security/pam_umask.so";
-    args = [ "umask=0027" ];
-    order = 200;
-  };
-  # 3. Sudo Log Permissions
+  # 3. PRIVILEGE ESCALATION BARRIERS
+  # Only users in the 'wheel' group can even ATTEMPT to use 'su'.
+  # This reduces the attack surface if a non-admin service account is compromised.
+  security.pam.services.su.wheelOnly = true;
+
+  # 4. UMASK APPLICATION (The Refactored Way)
+  # Apply the rule defined in 'let' to critical entry points.
+  security.pam.services.login.rules.session.umask = umaskRule;
+  security.pam.services.sshd.rules.session.umask = umaskRule;
+  # Also apply to graphical login (Greeter) if you use one (e.g., GDM, SDDM, greetd)
+  # security.pam.services.greetd.rules.session.umask = umaskRule; 
+
+  # 5. SUDO AUDITING
+  # Your tmpfiles rule is good, but we need to tell sudo to actually WRITE there.
+  security.sudo.extraConfig = ''
+    Defaults logfile=/var/log/sudo.log
+    Defaults log_year, log_host
+  '';
+  
   systemd.tmpfiles.rules = [
     "f /var/log/sudo.log 0600 root root - -"
-  ];  
-
+  ];
   # === POLKIT SECURITY === 
   # Require authentication for system operations
   
