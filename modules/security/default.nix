@@ -56,42 +56,12 @@
 
   # === AUDIT LOGGING ===
   # Track all security-relevant events
-  security.auditd.enable = true;
+  security.auditd = {
+  enable = true;
+  };
   security.audit = {
     enable = true;
     rules = [
-    # --- Authentication monitoring ---
-    # `touch /var/log/faillog /var/log/lastlog` to create the files first.
-    "-w /var/log/faillog -p wa -k auth"
-    "-w /var/log/lastlog -p wa -k auth"
-
-    # --- Identity changes ---
-    "-w /etc/passwd -p wa -k identity"
-    "-w /etc/group -p wa -k identity"
-    "-w /etc/shadow -p wa -k identity"
-    "-w /etc/gshadow -p wa -k identity"
-
-    # --- Sudo monitoring ---
-    "-w /etc/sudoers -p wa -k sudoers"
-    "-w /etc/sudoers.d/ -p wa -k sudoers" # FIXED: Removed space in 'sudoers. d/'
-
-    # --- System config ---
-    "-w /home/phatle/nixos-config/ -p wa -k nixos_config"
-
-    # --- Kernel modules (Fixed for NixOS) ---
-    # We watch the syscalls (kernel actions) instead of the /sbin/ files
-    "-a always,exit -F arch=b64 -S init_module -S finit_module -k modules"
-    "-a always,exit -F arch=b64 -S delete_module -k modules"
-
-    # --- Time changes ---
-    "-a always,exit -F arch=b64 -S adjtimex -S settimeofday -S clock_settime -k time_change"
-    "-w /etc/localtime -p wa -k time_change"
-
-    # --- File deletions ---
-    "-a always,exit -F arch=b64 -S unlink -S unlinkat -S rename -S renameat -F auid>=1000 -F auid!=4294967295 -k delete"
-
-    # --- Privilege escalation ---
-    "-a always,exit -F arch=b64 -S setuid -F a0=0 -k privilege_escalation"
     ];
   };
 
