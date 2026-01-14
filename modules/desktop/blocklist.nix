@@ -195,12 +195,9 @@ in
       forward-zone = [
         {
           name = ".";
-            forward-tls-upstream = "yes";               # Enable DoT
+            forward-tls-upstream = "no";
             forward-addr = [
-            "1.1.1.1@853#one.one.one.one"              # DoT
-            "1.0.0.1@853#one.one.one.one"              # DoT fallback
-            "9.9.9.9@853#dns.quad9.net"                # DoT fallback 2
-            "149.112.112.112@853#dns.quad9.net"        # DoT fallback 3        
+            "127.0.0.53"    
           ];
         }
       ];
