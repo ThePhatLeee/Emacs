@@ -15,5 +15,6 @@
     gnumake
     sdbus-cpp
     pciutils
+    claude-code
   ];
 }
