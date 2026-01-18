@@ -161,13 +161,13 @@ in
 
   # Disable systemd-resolved stub listener
   services.resolved = {
-    enable = true;
-    extraConfig = ''
-      DNSStubListener=no
-    '';
+  enable = true;
+  settings = {
+    Resolve = {
+      #DNSStubListener = "no";
+    };
   };
-
-  services.unbound = {
+};  services.unbound = {
     enable = true;
     settings = {
       server = {

@@ -106,23 +106,29 @@
   # === DNS PRIVACY WITH DNS OVER TLS ===
   # Encrypted DNS queries via systemd-resolved
   
- services.resolved = {
+ 
+services.resolved = {
   enable = true;
-  dnssec = "false";
-  
-  extraConfig = ''
-    [Resolve]
-    DNS=
-    FallbackDNS=FallbackDNS=1.1.1.1#one.one.one.one 1.0.0.1#one.one.one.one 2606:4700:4700::1111#one.one.one.one 2606:4700:4700::     1001#one.one.one.one
-    DNSOverTLS=opportunistic
-    DNSSEC=no
-    DNSStubListener=yes
-    DNSStubListenerExtra=127.0.0.53
-    Cache=yes
-    MulticastDNS=no
-    LLMNR=no
-  '';
-};  # === PACKAGES ===
+  dnssec = "false"; 
+  dnsovertls = "opportunistic"; 
+  fallbackDns = [
+    "1.1.1.1#one.one.one.one"
+    "1.0.0.1#one.one.one.one"
+    "2606:4700:4700::1111#one.one.one.one"
+    "2606:4700:4700::1001#one.one.one.one"
+  ];
+
+  settings = {
+    Resolve = {
+      DNSStubListener = "yes"; 
+      DNSStubListenerExtra = "127.0.0.53";
+      Cache = "yes";
+      MulticastDNS = "no";
+      LLMNR = "no";
+      DNS = [ "..." ]; 
+    };
+  };
+};# === PACKAGES ===
   
   environment.systemPackages = with pkgs; [
     networkmanager
