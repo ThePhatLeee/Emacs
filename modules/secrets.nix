@@ -7,7 +7,7 @@
 
   age.secrets = {
     canlock = {
-      file = ../secrets/canlock.age;
+      file =  ../secrets/canlock.age;
       owner = "phatle";
       mode = "400";
     };
