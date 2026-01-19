@@ -84,6 +84,8 @@
 ;; (package! jabber)
 (package! elpher)
 (package! emms)
+;; Matrix client
+(package! ement)
 ;; Epub reader
 (package! nov)
 ;; (package! minimap)

@@ -11,5 +11,6 @@
     ./cpp.nix       
     ./lua.nix       
     ./markup.nix
+    ./database.nix
   ];
 }

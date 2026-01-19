@@ -1,3 +1,3 @@
-dotfiles/doom/private/** filter=git-crypt diff=git-crypt
-modules/desktop/backup.nix filter=git-crypt diff=git-crypt
-.gitattributes !filter !diff
+dotfiles/doom/private/*.el filter=git-crypt diff=git-crypt
+secrets/*.age filter=git-crypt diff=git-crypt
+*.key filter=git-crypt diff=git-crypt

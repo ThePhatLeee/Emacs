@@ -29,5 +29,7 @@ in
     # Thunderbird theming
     ".thunderbird/w2wlpdok.default/chrome".source =
       mkOutOfStoreSymlink "${configDir}/thunderbird/chrome";
+      # Spotifyd
+    ".config/spotifyd".source = mkOutOfStoreSymlink "${configDir}/spotifyd";
   };
 }
