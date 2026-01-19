@@ -1417,7 +1417,11 @@ This function is designed to be called via `emacsclient -e`."
        :desc "Open ERC (IRC)"           "r" #'my/erc-connect
        :desc "Open Matrix"              "m" #'my/matrix-connect
        :desc "Matrix view room"         "M" #'my/matrix-room
-       :desc "Open Signal"              "S" #'my/signal-open   
+       (:prefix ("S" . "Signal")
+        :desc "Open gurk TUI"           "s" #'my/signal-open
+        :desc "Signal Desktop"          "d" #'my/signal-desktop
+        :desc "Send quick message"      "m" #'my/signal-send-quick
+        :desc "Edit config"             "c" #'my/signal-config)  
        :desc "Open EWW Browser"         "w" #'eww
        :desc "Update elfeed"            "u" #'elfeed-update
        :desc "MPV watch video"          "v" #'elfeed-tube-mpv
@@ -1684,7 +1688,10 @@ This function is designed to be called via `emacsclient -e`."
         :desc "Start spotifyd" "s" #'my/spotifyd-start
         :desc "Stop spotifyd" "k" #'my/spotifyd-stop
         :desc "Restart spotifyd" "r" #'my/spotifyd-restart
-        :desc "Spotify TUI" "t" #'my/spotify-tui)))
+        :desc "Track info" "i" #'my/spotify-info
+        :desc "Play/Pause" "SPC" #'my/spotify-play-pause
+        :desc "Next track" "n" #'my/spotify-next
+        :desc "Previous track" "p" #'my/spotify-prev)))
 ;; Optional: Waybar signal hook (uncomment if using waybar)
 ;; (with-eval-after-load 'emms
 ;;   (add-hook 'emms-player-started-hook 'emms-signal-waybar-mpd-update))
@@ -1709,14 +1716,37 @@ This function is designed to be called via `emacsclient -e`."
   (my/spotifyd-stop)
   (sit-for 1)
   (my/spotifyd-start))
-
-;; Spotify TUI keybindings (under SPC m for music)
-(defun my/spotify-tui ()
-  "Open Spotify TUI in vterm."
+;; Show current Spotify playback info (if you have playerctl)
+(defun my/spotify-info ()
+  "Show current Spotify track info."
   (interactive)
-  (let ((vterm-buffer-name "*spotify-tui*"))
-    (vterm)
-    (vterm-send-string "spt\n")))
+  (let ((info (shell-command-to-string
+               "playerctl -p spotifyd metadata --format '{{ artist }} - {{ title }}' 2>/dev/null")))
+    (if (string-empty-p (string-trim info))
+        (message "Spotifyd not playing or not running")
+      (message "♫ %s" (string-trim info)))))
+
+;; Control Spotify via MPRIS (if you have playerctl)
+(defun my/spotify-play-pause ()
+  "Toggle Spotify playback."
+  (interactive)
+  (shell-command "playerctl -p spotifyd play-pause 2>/dev/null")
+  (sit-for 0.2)
+  (my/spotify-info))
+
+(defun my/spotify-next ()
+  "Next Spotify track."
+  (interactive)
+  (shell-command "playerctl -p spotifyd next 2>/dev/null")
+  (sit-for 0.5)
+  (my/spotify-info))
+
+(defun my/spotify-prev ()
+  "Previous Spotify track."
+  (interactive)
+  (shell-command "playerctl -p spotifyd previous 2>/dev/null")
+  (sit-for 0.5)
+  (my/spotify-info))
 
 ;; Nov.el customizations and setup
 (setq nov-unzip-program (executable-find "bsdtar")
@@ -2099,49 +2129,58 @@ This function is designed to be called via `emacsclient -e`."
   (interactive)
   (call-interactively #'ement-view-room))
 
-;; Signal messaging - native Emacs integration via signal-msg
-;; Requires signal-cli to be installed and linked
-;; Setup: signal-cli -u +YOUR_PHONE link (then scan QR with phone)
+;; Signal integration using gurk-rs (Rust TUI)
+;; Works perfectly in vterm inside Emacs
+;; Requires: gurk-rs (installed via nixpkgs)
 
-(use-package! signal-msg
-  :defer t
-  :commands (signal-msg-mode signal-msg-send)
-  :init
-  ;; Get phone number from pass (keeps it private)
-  (setq signal-msg-phone-number
-        (string-trim
-         (shell-command-to-string "pass show signal/phone")))
-  
-  ;; signal-cli path (installed via nixpkgs)
-  (setq signal-msg-cli-path "signal-cli")
-  
-  :config
-  ;; Auto-receive messages
-  (setq signal-msg-auto-receive t)
-  (setq signal-msg-auto-receive-interval 30)
-  
-  ;; Message display
-  (setq signal-msg-show-in-minibuffer t)
-  
-  ;; Notifications
-  (setq signal-msg-notify t))
+;; Phone number loaded from pass (keeps it private)
+(defvar my/signal-phone nil
+  "Signal phone number from pass.")
 
-;; Helper functions
+(defun my/signal-load-phone ()
+  "Load Signal phone number from pass."
+  (unless my/signal-phone
+    (setq my/signal-phone
+          (string-trim
+           (shell-command-to-string "pass show signal/phone")))))
+
+;; Main function - opens gurk-rs in vterm
 (defun my/signal-open ()
-  "Open Signal messaging interface."
+  "Open Signal using gurk-rs TUI in vterm."
   (interactive)
-  (signal-msg-mode))
+  (my/signal-load-phone)
+  (let ((vterm-buffer-name "*Signal (gurk-rs)*"))
+    (if (get-buffer vterm-buffer-name)
+        (switch-to-buffer vterm-buffer-name)
+      (vterm vterm-buffer-name)
+      (vterm-send-string "gurk\n"))))
 
-(defun my/signal-send-message ()
-  "Send a quick Signal message."
+;; Alternative: Open Signal Desktop (GUI backup)
+(defun my/signal-desktop ()
+  "Launch Signal Desktop GUI application."
   (interactive)
-  (let ((recipient (read-string "Recipient (phone or name): "))
-        (message (read-string "Message: ")))
-    (signal-msg-send recipient message)))
+  (start-process "signal-desktop" nil "signal-desktop")
+  (message "Launched Signal Desktop"))
 
-;; Keybinding for quick send
-(map! :leader
-      :desc "Signal quick send" "a S" #'my/signal-send-message)
+;; Quick send message via signal-cli (for scripting)
+(defun my/signal-send-quick ()
+  "Send a quick Signal message via CLI."
+  (interactive)
+  (my/signal-load-phone)
+  (let* ((recipient (read-string "Recipient (phone or contact): "))
+         (message (read-string "Message: "))
+         (command (format "signal-cli -u %s send -m '%s' %s"
+                         my/signal-phone
+                         (replace-regexp-in-string "'" "'\\\\''" message)
+                         recipient)))
+    (async-shell-command command "*signal-send*")
+    (message "Sending Signal message to %s..." recipient)))
+
+;; Open gurk-rs config
+(defun my/signal-config ()
+  "Open gurk-rs configuration file."
+  (interactive)
+  (find-file "~/.config/gurk/gurk.toml"))
 
 (define-minor-mode my/audio-recorder-mode
   "Minor mode for recording audio in Emacs."
