@@ -48,9 +48,13 @@
 
 ;; Some functionality uses this to identify you, e.g. GPG configuration, email
 ;; clients, file templates and snippets.
-(setq user-full-name "Marko Jokinen"
-      user-mail-address "thephatle@proton.me")
-
+;; Personal info from pass (keeps secrets private)
+(setq user-full-name
+      (string-trim
+       (shell-command-to-string "pass show personal/fullname"))
+      user-mail-address
+      (string-trim
+       (shell-command-to-string "pass show personal/email")))
 (setq auth-sources '("~/.authinfo.gpg" "~/.authinfo")
       auth-source-cache-expiry nil) ; default is 7200 (2h)
 
@@ -137,8 +141,8 @@
 (remove-hook '+doom-dashboard-functions #'doom-dashboard-widget-footer)
 
 ;; Your splash image
-(setq fancy-splash-image "~/Pictures/Wallpapers/michaelemacs.jpg")
-
+(setq fancy-splash-image 
+      (expand-file-name "~/nixos-config/wallpapers/michaelemacs.jpg"))
 ;; Custom footer with Jerusalem cross
 (defun +my/dashboard-footer ()
   (insert "\n\n")
@@ -154,9 +158,9 @@
                                    :v-adjust -0.15
                                    :inherit doom-dashboard-footer-icon)))))
     (make-text-button start (point)
-                      'action (lambda (_) (browse-url "https://joshblais.com"))
+                      'action (lambda (_) (browse-url "https://thephatle.dev"))
                       'follow-link t
-                      'help-echo "Visit joshblais.com"
+                      'help-echo "Visit thephatle.dev"
                       'face 'doom-dashboard-footer-icon
                       'mouse-face 'highlight))
   (insert "\n"))
@@ -1163,14 +1167,11 @@ This function is designed to be called via `emacsclient -e`."
 
 ;; Define API key function at top level - available to all packages
 (defun gptel-api-key ()
-  "Read API key from file and cache it."
+  "Read API key from pass."
   (or (bound-and-true-p gptel--cached-api-key)
       (setq gptel--cached-api-key
             (string-trim
-             (with-temp-buffer
-               (insert-file-contents "~/secrets/claude_key")
-               (buffer-string))))))
-
+             (shell-command-to-string "pass show claude/api-key")))))
 ;; GPtel configuration
 (use-package! gptel
   :defer t
@@ -2049,17 +2050,19 @@ This function is designed to be called via `emacsclient -e`."
 ;;        :desc "Connect to Rizon IRC" "i" #'my/irc-connect-rizon))
 
 (defun my/erc-connect ()
+  "Connect to IRC using credentials from authinfo.gpg."
   (interactive)
-  (let ((password (auth-source-pick-first-password :host "irc.liberachat" :user "ThePhatLe")))
+  (let* ((server (string-trim (shell-command-to-string "pass show irc/server")))
+         (nick (string-trim (shell-command-to-string "pass show irc/nick")))
+         (password (auth-source-pick-first-password :host server :user nick)))
     (if password
-        (erc-tls :server "irc.libera.chat"
+        (erc-tls :server server
                  :port 6697
-                 :nick "ThePhatLe"
-                 :password (format "ThePhatLe/liberachat:%s" password))
-      (message "Password not found"))))
-
+                 :nick nick
+                 :password password)
+      (message "IRC password not found in authinfo.gpg"))))
 (setq erc-autojoin-channels-alist
-      '(("libera" "#technicalrenaissance" "#emacs" "#go-nuts" "#systemcrafters" "nixos" "librephone"))
+      '(("libera" "#technicalrenaissance" "#emacs" "#go-nuts" "#systemcrafters" "nixos" ))
       erc-track-shorten-start 8
       erc-kill-buffer-on-part t
       erc-auto-query 'bury)
@@ -2096,34 +2099,49 @@ This function is designed to be called via `emacsclient -e`."
   (interactive)
   (call-interactively #'ement-view-room))
 
-;; Signal messaging integration via signal-cli
-(use-package! signal
+;; Signal messaging - native Emacs integration via signal-msg
+;; Requires signal-cli to be installed and linked
+;; Setup: signal-cli -u +YOUR_PHONE link (then scan QR with phone)
+
+(use-package! signal-msg
   :defer t
-  :commands (signal signal-send signal-receive)
+  :commands (signal-msg-mode signal-msg-send)
+  :init
+  ;; Get phone number from pass (keeps it private)
+  (setq signal-msg-phone-number
+        (string-trim
+         (shell-command-to-string "pass show signal/phone")))
+  
+  ;; signal-cli path (installed via nixpkgs)
+  (setq signal-msg-cli-path "signal-cli")
+  
   :config
-  ;; Signal CLI path (installed via nixpkgs)
-  (setq signal-cli-path "signal-cli")
-  
-  ;; Your registered phone number
-  ;; Set this after registering with signal-cli
-  (setq signal-user "+358417486117")
-  
   ;; Auto-receive messages
-  (setq signal-receive-timer-interval 30)  ; Check every 30 seconds
+  (setq signal-msg-auto-receive t)
+  (setq signal-msg-auto-receive-interval 30)
   
-  ;; Notification settings
-  (setq signal-notify t))
+  ;; Message display
+  (setq signal-msg-show-in-minibuffer t)
+  
+  ;; Notifications
+  (setq signal-msg-notify t))
 
 ;; Helper functions
 (defun my/signal-open ()
   "Open Signal messaging interface."
   (interactive)
-  (signal))
+  (signal-msg-mode))
 
 (defun my/signal-send-message ()
-  "Send a Signal message."
+  "Send a quick Signal message."
   (interactive)
-  (call-interactively #'signal-send))
+  (let ((recipient (read-string "Recipient (phone or name): "))
+        (message (read-string "Message: ")))
+    (signal-msg-send recipient message)))
+
+;; Keybinding for quick send
+(map! :leader
+      :desc "Signal quick send" "a S" #'my/signal-send-message)
 
 (define-minor-mode my/audio-recorder-mode
   "Minor mode for recording audio in Emacs."
@@ -2207,7 +2225,7 @@ This function is designed to be called via `emacsclient -e`."
 ;;        (mu4e-compose-mode)
 ;;        ;; Set up headers
 ;;        (message-goto-to)
-;;        (insert "josh@joshblais.com")
+;;        (insert "info@thephatle.dev")
 ;;        (message-goto-subject)
 ;;        (insert subject)
 ;;        (message-goto-body)
