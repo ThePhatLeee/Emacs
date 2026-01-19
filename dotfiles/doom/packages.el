@@ -86,6 +86,8 @@
 (package! emms)
 ;; Matrix client
 (package! ement)
+;; Signal messaging
+(package! signal)
 ;; Epub reader
 (package! nov)
 ;; (package! minimap)

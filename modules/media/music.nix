@@ -6,6 +6,7 @@
     ncmpcpp
     spotify
     spotdl
+    spotifyd
     # Audio tools
     audacity
     # Audio codecs

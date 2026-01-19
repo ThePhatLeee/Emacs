@@ -60,8 +60,8 @@ This will test our emacs load time and setup. Comment out when not in use!
 
 ;; Some functionality uses this to identify you, e.g. GPG configuration, email
 ;; clients, file templates and snippets.
-(setq user-full-name "Josh Blais"
-      user-mail-address "josh@joshblais.com")
+(setq user-full-name "Marko Jokinen"
+      user-mail-address "thephatle@proton.me")
 
 (setq auth-sources '("~/.authinfo.gpg" "~/.authinfo")
       auth-source-cache-expiry nil) ; default is 7200 (2h)
@@ -1603,6 +1603,7 @@ Changes environment to bash for compilation commands (ie. zig-run go-test etc.)
        :desc "Open ERC (IRC)"           "r" #'my/erc-connect
        :desc "Open Matrix"              "m" #'my/matrix-connect
        :desc "Matrix view room"         "M" #'my/matrix-room
+       :desc "Open Signal"              "S" #'my/signal-open   
        :desc "Open EWW Browser"         "w" #'eww
        :desc "Update elfeed"            "u" #'elfeed-update
        :desc "MPV watch video"          "v" #'elfeed-tube-mpv
@@ -2282,12 +2283,12 @@ Attempt to get files sent to browser or thunderbird
 #+begin_src elisp
 (defun my/erc-connect ()
   (interactive)
-  (let ((password (auth-source-pick-first-password :host "irc.joshblais.com" :user "phatle")))
+  (let ((password (auth-source-pick-first-password :host "irc.liberachat" :user "ThePhatLe")))
     (if password
-        (erc-tls :server "irc.joshblais.com"
+        (erc-tls :server "irc.libera.chat"
                  :port 6697
-                 :nick "phatleblais"
-                 :password (format "phatle/liberachat:%s" password))
+                 :nick "ThePhatLe"
+                 :password (format "ThePhatLe/liberachat:%s" password))
       (message "Password not found"))))
 
 (setq erc-autojoin-channels-alist
@@ -2329,6 +2330,37 @@ Attempt to get files sent to browser or thunderbird
   "View a Matrix room."
   (interactive)
   (call-interactively #'ement-view-room))
+#+end_src
+** Signal
+#+begin_src elisp
+;; Signal messaging integration via signal-cli
+(use-package! signal
+  :defer t
+  :commands (signal signal-send signal-receive)
+  :config
+  ;; Signal CLI path (installed via nixpkgs)
+  (setq signal-cli-path "signal-cli")
+  
+  ;; Your registered phone number
+  ;; Set this after registering with signal-cli
+  (setq signal-user "+358417486117")
+  
+  ;; Auto-receive messages
+  (setq signal-receive-timer-interval 30)  ; Check every 30 seconds
+  
+  ;; Notification settings
+  (setq signal-notify t))
+
+;; Helper functions
+(defun my/signal-open ()
+  "Open Signal messaging interface."
+  (interactive)
+  (signal))
+
+(defun my/signal-send-message ()
+  "Send a Signal message."
+  (interactive)
+  (call-interactively #'signal-send))
 #+end_src
 ** Audio recording
 #+begin_src elisp
