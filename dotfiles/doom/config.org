@@ -1885,7 +1885,10 @@ Changes environment to bash for compilation commands (ie. zig-run go-test etc.)
         :desc "Start spotifyd" "s" #'my/spotifyd-start
         :desc "Stop spotifyd" "k" #'my/spotifyd-stop
         :desc "Restart spotifyd" "r" #'my/spotifyd-restart
-        :desc "Spotify TUI" "t" #'my/spotify-tui)))
+        :desc "Track info" "i" #'my/spotify-info
+        :desc "Play/Pause" "SPC" #'my/spotify-play-pause
+        :desc "Next track" "n" #'my/spotify-next
+        :desc "Previous track" "p" #'my/spotify-prev)))
 ;; Optional: Waybar signal hook (uncomment if using waybar)
 ;; (with-eval-after-load 'emms
 ;;   (add-hook 'emms-player-started-hook 'emms-signal-waybar-mpd-update))
@@ -1912,14 +1915,37 @@ Changes environment to bash for compilation commands (ie. zig-run go-test etc.)
   (my/spotifyd-stop)
   (sit-for 1)
   (my/spotifyd-start))
-
-;; Spotify TUI keybindings (under SPC m for music)
-(defun my/spotify-tui ()
-  "Open Spotify TUI in vterm."
+;; Show current Spotify playback info (if you have playerctl)
+(defun my/spotify-info ()
+  "Show current Spotify track info."
   (interactive)
-  (let ((vterm-buffer-name "*spotify-tui*"))
-    (vterm)
-    (vterm-send-string "spt\n")))
+  (let ((info (shell-command-to-string
+               "playerctl -p spotifyd metadata --format '{{ artist }} - {{ title }}' 2>/dev/null")))
+    (if (string-empty-p (string-trim info))
+        (message "Spotifyd not playing or not running")
+      (message "♫ %s" (string-trim info)))))
+
+;; Control Spotify via MPRIS (if you have playerctl)
+(defun my/spotify-play-pause ()
+  "Toggle Spotify playback."
+  (interactive)
+  (shell-command "playerctl -p spotifyd play-pause 2>/dev/null")
+  (sit-for 0.2)
+  (my/spotify-info))
+
+(defun my/spotify-next ()
+  "Next Spotify track."
+  (interactive)
+  (shell-command "playerctl -p spotifyd next 2>/dev/null")
+  (sit-for 0.5)
+  (my/spotify-info))
+
+(defun my/spotify-prev ()
+  "Previous Spotify track."
+  (interactive)
+  (shell-command "playerctl -p spotifyd previous 2>/dev/null")
+  (sit-for 0.5)
+  (my/spotify-info))
 #+end_src
 ** Reading
 *** Nov.el
