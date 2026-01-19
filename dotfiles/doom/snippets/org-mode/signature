@@ -6,9 +6,8 @@
 
 Platforms are slavery. PGP key attached.
 
-Joshua Blais
-Broker,
-Revere
+Marko Jokinen (Phat Le)
+Developer
+Student
 
-<#part type="text/plain" filename="~/gpg-pub.asc" disposition=attachment description="PGP key">
-<#/part>
+<#part type="text/plain" filename="~/.gnupg/public-key.asc" disposition=attachment description="PGP key">

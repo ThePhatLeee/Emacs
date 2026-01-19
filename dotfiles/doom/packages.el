@@ -87,7 +87,8 @@
 ;; Matrix client
 (package! ement)
 ;; Signal messaging
-(package! signal)
+(package! signal-msg
+  :recipe (:host github :repo "presidentbeef/signal-msg"))
 ;; Epub reader
 (package! nov)
 ;; (package! minimap)
