@@ -9,8 +9,8 @@ echo "Creating authinfo from pass secrets..."
 IRC_SERVER=$(pass show irc/server)
 IRC_NICK=$(pass show irc/nick)
 IRC_PASSWORD=$(pass show irc/password)
-EMAIL=$(pass show personal/email)
-
+LOGIN_EMAIL=$(pass show personal/email)
+GPG_EMAIL=$(pass show developer/email)
 # Optional: Email credentials
 if pass show email/smtp-password &>/dev/null; then
     SMTP_SERVER=$(pass show email/smtp-server)
@@ -40,8 +40,8 @@ EOF
 fi
 
 # Encrypt with GPG
-gpg --encrypt --recipient $EMAIL ~/.authinfo
-
+echo "Encrypting for GPG identity: $GPG_EMAIL..."
+gpg --encrypt --recipient "$GPG_EMAIL" ~/.authinfo
 # Remove plaintext
 rm ~/.authinfo
 
