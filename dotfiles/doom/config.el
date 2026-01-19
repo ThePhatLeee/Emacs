@@ -48,8 +48,8 @@
 
 ;; Some functionality uses this to identify you, e.g. GPG configuration, email
 ;; clients, file templates and snippets.
-(setq user-full-name "Josh Blais"
-      user-mail-address "josh@joshblais.com")
+(setq user-full-name "Marko Jokinen"
+      user-mail-address "thephatle@proton.me")
 
 (setq auth-sources '("~/.authinfo.gpg" "~/.authinfo")
       auth-source-cache-expiry nil) ; default is 7200 (2h)
@@ -180,8 +180,8 @@
 ;; set specific browser to open links
 ;;(setq browse-url-browser-function 'browse-url-firefox)
 ;; set browser to firefox
-(setq browse-url-browser-function 'browse-url-generic)
-(setq browse-url-generic-program "chromium")  ; replace with actual executable name
+(setq browse-url-browser-function 'browse-url-firefox)
+(setq browse-url-generic-program "firefox")  ; replace with actual executable name
 
 ;; Speed of which-key popup
 (setq which-key-idle-delay 0.2)
@@ -1206,6 +1206,24 @@ This function is designed to be called via `emacsclient -e`."
 (map! :leader
       :desc "Aider menu" "a" #'aider-transient-menu)
 
+;; Claude Code - Terminal-based AI coding assistant
+;; Helper function to start Claude Code in vterm
+(defun my/claude-code ()
+  "Start Claude Code in a new vterm buffer."
+  (interactive)
+  (let ((vterm-buffer-name "*claude-code*"))
+    (vterm)
+    (vterm-send-string "claude-code\n")))
+
+;; Helper function to start Claude Code with specific instructions
+(defun my/claude-code-with-task ()
+  "Start Claude Code with a specific task."
+  (interactive)
+  (let ((task (read-string "Claude Code task: "))
+        (vterm-buffer-name "*claude-code*"))
+    (vterm)
+    (vterm-send-string (format "claude-code \"%s\"\n" task))))
+
 (after! magit
   (defun my/magit-stage-commit-push ()
     "Stage all, commit with quick message, and push with no questions"
@@ -1392,10 +1410,13 @@ This function is designed to be called via `emacsclient -e`."
        :desc "spell check"                      "z" #'ispell-word
        :desc "Find definition"                  "f" #'lsp-find-definition
        )
-      ;; Mappings for Elfeed and ERC
-      (:prefix("e" . "Elfeed/ERC/AI")
+      ;; Mappings for Elfeed, Communications, and AI
+      (:prefix("e" . "Communications/AI")
        :desc "Open elfeed"              "e" #'elfeed
-       :desc "Open ERC"                 "r" #'my/erc-connect
+       :desc "Open ERC (IRC)"           "r" #'my/erc-connect
+       :desc "Open Matrix"              "m" #'my/matrix-connect
+       :desc "Matrix view room"         "M" #'my/matrix-room
+       :desc "Open Signal"              "S" #'my/signal-open   
        :desc "Open EWW Browser"         "w" #'eww
        :desc "Update elfeed"            "u" #'elfeed-update
        :desc "MPV watch video"          "v" #'elfeed-tube-mpv
@@ -1405,9 +1426,10 @@ This function is designed to be called via `emacsclient -e`."
        :desc "Send region to Claude"    "s" #'elysium-add-context
        :desc "Elysium chat UI"          "i" #'elysium-query
        :desc "Aider code session"       "a" #'aider-session
-       :desc "Aider edit region"        "c" #'aider-edit-regio
+       :desc "Aider edit region"        "c" #'aider-edit-region
+       :desc "Claude Code"              "C" #'my/claude-code
+       :desc "Claude Code with task"    "t" #'my/claude-code-with-task
        )
-
       ;; Various other commands
       (:prefix("o" . "open")
        :desc "Calendar"                  "c" #'=calendar
@@ -1644,7 +1666,8 @@ This function is designed to be called via `emacsclient -e`."
 
 ;; Keybindings
 (map! :leader
-      (:prefix ("m" . "music/EMMS")
+      (:prefix ("m" . "Music")
+       ;; EMMS/MPD controls
        :desc "Update from MPD" "u" #'my/update-emms-from-mpd
        :desc "Play at directory tree" "d" #'emms-play-directory-tree
        :desc "Go to emms playlist" "p" #'emms-playlist-mode-go
@@ -1653,11 +1676,46 @@ This function is designed to be called via `emacsclient -e`."
        :desc "Emms stop track" "s" #'emms-stop
        :desc "Emms play previous track" "b" #'emms-previous
        :desc "Emms play next track" "n" #'emms-next
-       :desc "EMMS Browser" "o" #'emms-browser))
-
+       :desc "EMMS Browser" "o" #'emms-browser
+       
+       ;; Spotify/spotifyd controls (submenu)
+       (:prefix ("S" . "Spotify")
+        :desc "Start spotifyd" "s" #'my/spotifyd-start
+        :desc "Stop spotifyd" "k" #'my/spotifyd-stop
+        :desc "Restart spotifyd" "r" #'my/spotifyd-restart
+        :desc "Spotify TUI" "t" #'my/spotify-tui)))
 ;; Optional: Waybar signal hook (uncomment if using waybar)
 ;; (with-eval-after-load 'emms
 ;;   (add-hook 'emms-player-started-hook 'emms-signal-waybar-mpd-update))
+
+;; Spotifyd integration - lightweight Spotify client daemon
+;; Start/stop spotifyd daemon
+(defun my/spotifyd-start ()
+  "Start spotifyd daemon."
+  (interactive)
+  (async-shell-command "spotifyd --no-daemon" "*spotifyd*")
+  (message "Spotifyd started"))
+
+(defun my/spotifyd-stop ()
+  "Stop spotifyd daemon."
+  (interactive)
+  (shell-command "killall spotifyd")
+  (message "Spotifyd stopped"))
+
+(defun my/spotifyd-restart ()
+  "Restart spotifyd daemon."
+  (interactive)
+  (my/spotifyd-stop)
+  (sit-for 1)
+  (my/spotifyd-start))
+
+;; Spotify TUI keybindings (under SPC m for music)
+(defun my/spotify-tui ()
+  "Open Spotify TUI in vterm."
+  (interactive)
+  (let ((vterm-buffer-name "*spotify-tui*"))
+    (vterm)
+    (vterm-send-string "spt\n")))
 
 ;; Nov.el customizations and setup
 (setq nov-unzip-program (executable-find "bsdtar")
@@ -1992,12 +2050,12 @@ This function is designed to be called via `emacsclient -e`."
 
 (defun my/erc-connect ()
   (interactive)
-  (let ((password (auth-source-pick-first-password :host "irc.joshblais.com" :user "phatle")))
+  (let ((password (auth-source-pick-first-password :host "irc.liberachat" :user "ThePhatLe")))
     (if password
-        (erc-tls :server "irc.joshblais.com"
+        (erc-tls :server "irc.libera.chat"
                  :port 6697
-                 :nick "phatleblais"
-                 :password (format "phatle/liberachat:%s" password))
+                 :nick "ThePhatLe"
+                 :password (format "ThePhatLe/liberachat:%s" password))
       (message "Password not found"))))
 
 (setq erc-autojoin-channels-alist
@@ -2005,6 +2063,67 @@ This function is designed to be called via `emacsclient -e`."
       erc-track-shorten-start 8
       erc-kill-buffer-on-part t
       erc-auto-query 'bury)
+
+;; Matrix client using ement.el
+(use-package! ement
+  :defer t
+  :commands (ement-connect ement-view-room)
+  :config
+  ;; Save session automatically
+  (setq ement-save-sessions t)
+  
+  ;; Room display settings
+  (setq ement-room-send-message-filter 'ement-room-send-org-filter)
+  
+  ;; Notifications
+  (setq ement-notify-notification-method 'notifications)
+  
+  ;; Room list format
+  (setq ement-room-list-avatars nil)  ; Disable avatars for performance
+  
+  ;; Message format
+  (setq ement-room-message-format-spec "%S%B%r%R%t"))
+
+;; Helper function for quick connection
+(defun my/matrix-connect ()
+  "Connect to Matrix homeserver."
+  (interactive)
+  (ement-connect))
+
+;; Helper to view specific room
+(defun my/matrix-room ()
+  "View a Matrix room."
+  (interactive)
+  (call-interactively #'ement-view-room))
+
+;; Signal messaging integration via signal-cli
+(use-package! signal
+  :defer t
+  :commands (signal signal-send signal-receive)
+  :config
+  ;; Signal CLI path (installed via nixpkgs)
+  (setq signal-cli-path "signal-cli")
+  
+  ;; Your registered phone number
+  ;; Set this after registering with signal-cli
+  (setq signal-user "+358417486117")
+  
+  ;; Auto-receive messages
+  (setq signal-receive-timer-interval 30)  ; Check every 30 seconds
+  
+  ;; Notification settings
+  (setq signal-notify t))
+
+;; Helper functions
+(defun my/signal-open ()
+  "Open Signal messaging interface."
+  (interactive)
+  (signal))
+
+(defun my/signal-send-message ()
+  "Send a Signal message."
+  (interactive)
+  (call-interactively #'signal-send))
 
 (define-minor-mode my/audio-recorder-mode
   "Minor mode for recording audio in Emacs."
