@@ -22,6 +22,7 @@
     extraConfig = ''
       allow-loopback-pinentry
       allow-emacs-pinentry
+      allow-preset-passphrase
     '';
   };
 
