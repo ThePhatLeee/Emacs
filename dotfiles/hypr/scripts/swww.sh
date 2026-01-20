@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 
 # Configuration
-WALLPAPER_DIR="$HOME/Pictures/Wallpapers"
+WALLPAPER_DIR="$HOME/nixos-config//wallpapers"
 SWWW_TRANSITION="simple"
 SWWW_TRANSITION_STEP=2
 SWWW_TRANSITION_FPS=60
