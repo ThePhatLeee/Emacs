@@ -64,6 +64,44 @@
                     (format "/run/user/%d" (user-uid)))
                 "/gnupg/S.gpg-agent.ssh"))
 
+;; EPA/EPG configuration for automatic GPG handling
+(use-package! epa-file
+  :config
+  ;; Use loopback pinentry mode so Emacs can handle passphrases
+  (setq epa-pinentry-mode 'loopback
+        ;; Cache passphrases to avoid repeated prompts
+        epa-file-cache-passphrase-for-symmetric-encryption t
+        epa-file-select-keys nil  ; Don't prompt for key selection
+        ;; Suppress unnecessary warnings
+        epa-file-encrypt-to nil))
+
+(use-package! epg
+  :config
+  (setq epg-pinentry-mode 'loopback
+        ;; Use your default GPG key
+        epg-user-id "0x09D801B2351193B1"))
+
+;; Function to preset GPG passphrase from pass
+(defun my/preset-gpg-passphrase ()
+  "Preset GPG passphrase from pass into gpg-agent cache."
+  (interactive)
+  (let* ((passphrase (string-trim (shell-command-to-string "pass show gpg/passphrase")))
+         ;; Use the encryption subkey keygrip
+         (keygrip "7D56E57856F538345B12F1541961488699871CA2"))
+    (when (and passphrase (not (string-empty-p passphrase)))
+      (shell-command 
+       (format "echo %s | /run/current-system/sw/bin/gpg-preset-passphrase --preset %s" 
+               (shell-quote-argument passphrase) 
+               keygrip))
+      (message "GPG passphrase cached successfully"))))
+
+;; Automatically preset passphrase on Emacs startup
+(add-hook 'emacs-startup-hook #'my/preset-gpg-passphrase)
+
+;; Optional: Add a keybinding to manually refresh the passphrase cache
+(map! :leader
+      :desc "Refresh GPG passphrase cache" "o g" #'my/preset-gpg-passphrase)
+
 ;; Doom exposes five (optional) variables for controlling fonts in Doom. Here
 ;; are the three important ones:
 (setq doom-font (font-spec :family "GeistMono Nerd Font" :size 15)
@@ -168,7 +206,7 @@
 ;; Hook everything in order
 (add-hook! '+doom-dashboard-functions :append
   #'+my/dashboard-footer
-  (insert "\n" (+doom-dashboard--center +doom-dashboard--width "Welcome Home, Joshua.")))
+  (insert "\n" (+doom-dashboard--center +doom-dashboard--width "Welcome Home, Phat Le.")))
 
 ;; Here are some additional functions/macros that could help you configure Doom:
 ;;
