@@ -42,10 +42,10 @@
 
 ;; Nix related
 (package! agenix)
-
+;; Claude Code IDE - Native Emacs integration for Claude AI
+(package! claude-code-ide
+  :recipe (:host github :repo "manzaltu/claude-code-ide.el"))
 (package! gptel)
-(package! elysium :recipe (:host github :repo "lanceberge/elysium" :branch "master"))
-(package! aider :recipe (:host github :repo "tninja/aider.el" :files ("*.el")))
 
 ;; Trying to get mu4e nano working
 ;; (package! svg-tag-mode)
@@ -84,6 +84,7 @@
 ;; (package! jabber)
 (package! elpher)
 (package! emms)
+(package! smudge)
 ;; Matrix client
 (package! ement)
 ;; Signal messaging

@@ -1203,65 +1203,61 @@ This function is designed to be called via `emacsclient -e`."
 (require 'treemacs-all-the-icons)
 (setq doom-themes-treemacs-theme "all-the-icons")
 
-;; Define API key function at top level - available to all packages
+;; GPtel - Quick Claude chat via API (optional, for quick queries)
+;; Only used when you run M-x gptel directly
+;; Note: This uses Claude API (separate from your subscription)
 (defun gptel-api-key ()
-  "Read API key from pass."
-  (or (bound-and-true-p gptel--cached-api-key)
-      (setq gptel--cached-api-key
-            (string-trim
-             (shell-command-to-string "pass show claude/api-key")))))
-;; GPtel configuration
+  "Read API key from pass - only if you want to use GPtel with API."
+  (string-trim (shell-command-to-string "pass show claude/api-key")))
+
 (use-package! gptel
   :defer t
-  :custom
-  (gptel-model 'claude-sonnet-4-20250514)
   :config
   (setq gptel-backend
         (gptel-make-anthropic "Claude"
           :stream t
           :key #'gptel-api-key
-          :models '(claude-sonnet-4-20250514
-                    claude-opus-4-20250514
-                    claude-3-7-sonnet-20250219))))
+          ;; Let it use the latest available models
+          :models '(claude-sonnet-4-5
+                    claude-opus-4-5
+                    claude-sonnet-3-7))))
 
-;; Elysium - already optimal
-(use-package! elysium
+;; Claude Code IDE - Native Emacs integration for Claude AI
+;; Uses GPtel as the backend for API communication
+(use-package! claude-code-ide
   :defer t
   :after gptel
-  :custom
-  (elysium-window-size 0.33)
-  (elysium-window-style 'vertical))
-
-;; Aider configuration
-(use-package! aider
-  :defer t
-  :commands (aider-transient-menu)  ; Make command available immediately
+  :commands (claude-code-ide-start
+             claude-code-ide-chat
+             claude-code-ide-edit-file
+             claude-code-ide-diff
+             claude-code-ide-cancel
+             claude-code-ide-add-file
+             claude-code-ide-add-region
+             claude-code-ide-clear-context)
   :config
-  (setq aider-args '("--model" "claude-sonnet-4-20250514" "--no-auto-accept-architect"))
-  ;; Set API key when aider actually loads
-  (setenv "ANTHROPIC_API_KEY" (gptel-api-key)))
+  ;; Configuration - uses GPtel's backend
+  (setq claude-code-ide-model "claude-sonnet-4-20250514"
+        claude-code-ide-max-tokens 8192
+        claude-code-ide-temperature 0.7
+        claude-code-ide-response-buffer-name "*Claude*"
+        claude-code-ide-show-response-buffer t))
 
-;; Global keybinding - always available
+;; Keybindings for Claude Code IDE
 (map! :leader
-      :desc "Aider menu" "a" #'aider-transient-menu)
+      :prefix ("a" . "ai")
+      :desc "Chat with Claude" "c" #'claude-code-ide-chat
+      :desc "Start Claude session" "s" #'claude-code-ide-start
+      :desc "Edit current file" "e" #'claude-code-ide-edit-file
+      :desc "Show diff" "d" #'claude-code-ide-diff
+      :desc "Cancel request" "k" #'claude-code-ide-cancel
+      :desc "Add file to context" "f" #'claude-code-ide-add-file
+      :desc "Add region to context" "r" #'claude-code-ide-add-region
+      :desc "Clear context" "x" #'claude-code-ide-clear-context)
 
-;; Claude Code - Terminal-based AI coding assistant
-;; Helper function to start Claude Code in vterm
-(defun my/claude-code ()
-  "Start Claude Code in a new vterm buffer."
-  (interactive)
-  (let ((vterm-buffer-name "*claude-code*"))
-    (vterm)
-    (vterm-send-string "claude-code\n")))
-
-;; Helper function to start Claude Code with specific instructions
-(defun my/claude-code-with-task ()
-  "Start Claude Code with a specific task."
-  (interactive)
-  (let ((task (read-string "Claude Code task: "))
-        (vterm-buffer-name "*claude-code*"))
-    (vterm)
-    (vterm-send-string (format "claude-code \"%s\"\n" task))))
+;; Quick access binding
+(map! :leader
+      :desc "Quick Claude Chat" "C" #'claude-code-ide-chat)
 
 (after! magit
   (defun my/magit-stage-commit-push ()
@@ -1466,12 +1462,6 @@ This function is designed to be called via `emacsclient -e`."
        :desc "Open Elpher"              "l" #'elpher
        :desc "Open Pass"                "p" #'pass
        :desc "Claude chat (gptel)"      "g" #'gptel
-       :desc "Send region to Claude"    "s" #'elysium-add-context
-       :desc "Elysium chat UI"          "i" #'elysium-query
-       :desc "Aider code session"       "a" #'aider-session
-       :desc "Aider edit region"        "c" #'aider-edit-region
-       :desc "Claude Code"              "C" #'my/claude-code
-       :desc "Claude Code with task"    "t" #'my/claude-code-with-task
        )
       ;; Various other commands
       (:prefix("o" . "open")
@@ -1543,248 +1533,192 @@ This function is designed to be called via `emacsclient -e`."
 ;; Manually restore when ready
 ;; M-x persp-load-state-from-file
 
-;; EMMS full configuration with Nord theme, centered layout, and swaync notifications
+;; EMMS music player
 (use-package! emms
-:defer t
-  :commands (emms 
-             emms-browser 
-             emms-playlist-mode-go
-             emms-pause
-             emms-stop
-             emms-next
-             emms-previous
-             emms-shuffle)
+  :defer t
+  :commands (emms emms-browser emms-playlist-mode-go
+             emms-pause emms-stop emms-next emms-previous emms-shuffle)
   :init
-  ;; Set these early so they're available when EMMS loads
   (setq emms-source-file-default-directory "~/MusicOrganized"
         emms-playlist-buffer-name "*Music*"
         emms-info-asynchronously t
         emms-browser-default-browse-type 'artist)
   
   :config
-  ;; Initialize EMMS - only runs when you actually use it
   (emms-all)
   (emms-default-players)
   (emms-mode-line-mode 1)
   (emms-playing-time-mode 1)
 
-  ;; Basic settings
   (setq emms-browser-covers #'emms-browser-cache-thumbnail-async
         emms-browser-thumbnail-small-size 64
         emms-browser-thumbnail-medium-size 128
         emms-source-file-directory-tree-function 'emms-source-file-directory-tree-find)
 
-  ;; MPD integration - critical for your workflow
+  ;; MPD integration
   (require 'emms-player-mpd)
   (setq emms-player-mpd-server-name "localhost"
         emms-player-mpd-server-port "6600"
         emms-player-mpd-music-directory (expand-file-name "~/MusicOrganized"))
 
-  ;; Connect to MPD and add it to player list
   (add-to-list 'emms-player-list 'emms-player-mpd)
   (add-to-list 'emms-info-functions 'emms-info-mpd)
-  
-  ;; Connect to MPD with slight delay to avoid blocking
   (run-with-timer 0.1 nil #'emms-player-mpd-connect)
-
-  ;; Ensure players are properly set up
-  (setq emms-player-list '(emms-player-mpd
-                           emms-player-mplayer
-                           emms-player-vlc
-                           emms-player-mpg321
-                           emms-player-ogg123))
-
-  ;; Info functions
-  (add-to-list 'emms-info-functions 'emms-info-ogginfo)
-  (add-to-list 'emms-info-functions 'emms-info-tinytag)
-
-  ;; Nord theme colors
-  (custom-set-faces
-   ;; Nord
-   ;; '(emms-browser-artist-face ((t (:foreground "#ECEFF4" :height 1.1))))
-   ;; '(emms-browser-album-face ((t (:foreground "#88C0D0" :height 1.0))))
-   ;; '(emms-browser-track-face ((t (:foreground "#A3BE8C" :height 1.0))))
-   ;; '(emms-playlist-track-face ((t (:foreground "#D8DEE9" :height 1.0))))
-   ;; '(emms-playlist-selected-face ((t (:foreground "#BF616A" :weight bold)))))
   
-   ;; Nowhere
-'(emms-browser-artist-face ((t (:foreground "#e0dcd4" :height 1.1))))   ; Parchment - most prominent
-'(emms-browser-album-face ((t (:foreground "#b4bec8" :height 1.0))))    ; Steel-blue - secondary accent
-'(emms-browser-track-face ((t (:foreground "#b4beb4" :height 1.0))))    ; Sage-green - individual tracks
-'(emms-playlist-track-face ((t (:foreground "#c0bdb8" :height 1.0))))   ; Muted foreground - neutral
-'(emms-playlist-selected-face ((t (:foreground "#ccc4b0" :weight bold))))) ; Wheat-gold - warm selection
+  (setq emms-player-list '(emms-player-mpd)))
 
-  ;; Browser keybindings
-  (define-key emms-browser-mode-map (kbd "RET") 'emms-browser-add-tracks-and-play)
-  (define-key emms-browser-mode-map (kbd "SPC") 'emms-pause)
-
-  ;; Add notification hook
-  (add-hook 'emms-player-started-hook 'emms-notify-song-change-with-artwork))
-
-;; Helper functions - defined outside use-package so they're always available
-(defun my/update-emms-from-mpd ()
-  "Update EMMS cache from MPD and refresh browser."
-  (interactive)
-  (require 'emms)  ; Ensure EMMS is loaded
-  (message "Updating EMMS cache from MPD...")
-  (emms-player-mpd-connect)
-  (emms-cache-set-from-mpd-all)
-  (message "EMMS cache updated. Refreshing browser...")
-  (when (get-buffer "*EMMS Browser*")
-    (with-current-buffer "*EMMS Browser*"
-      (emms-browser-refresh))))
-
-(defun emms-center-buffer-in-frame ()
-  "Add margins to center the EMMS buffer in the frame."
-  (let* ((window-width (window-width))
-         (desired-width 80)
-         (margin (max 0 (/ (- window-width desired-width) 2))))
-    (setq-local left-margin-width margin)
-    (setq-local right-margin-width margin)
-    (setq-local line-spacing 0.2)
-    (set-window-buffer (selected-window) (current-buffer))))
-
-(defun emms-cover-art-path ()
-  "Return the path of the cover art for the current track."
-  (when (bound-and-true-p emms-playlist-buffer)
-    (let* ((track (emms-playlist-current-selected-track))
-           (path (emms-track-get track 'name))
-           (dir (file-name-directory path))
-           (standard-files '("cover.jpg" "cover.png" "folder.jpg" "folder.png"
-                           "album.jpg" "album.png" "front.jpg" "front.png"))
-           (standard-cover (cl-find-if
-                           (lambda (file)
-                             (file-exists-p (expand-file-name file dir)))
-                           standard-files)))
-      (if standard-cover
-          (expand-file-name standard-cover dir)
-        (let ((cover-files (directory-files dir nil ".*\\(jpg\\|png\\|jpeg\\)$")))
-          (when cover-files
-            (expand-file-name (car cover-files) dir)))))))
-
-(defun emms-notify-song-change-with-artwork ()
-  "Send song change notification with album artwork to swaync via libnotify."
-  (when (bound-and-true-p emms-playlist-buffer)
-    (let* ((track (emms-playlist-current-selected-track))
-           (artist (or (emms-track-get track 'info-artist) "Unknown Artist"))
-           (title (or (emms-track-get track 'info-title) "Unknown Title"))
-           (album (or (emms-track-get track 'info-album) "Unknown Album"))
-           (cover-image (emms-cover-art-path)))
-      
-      (apply #'start-process
-             "emms-notify" nil "notify-send"
-             "-a" "EMMS"
-             "-c" "music"
-             (append
-              (when cover-image
-                (list "-i" cover-image))
-              (list
-               (format "Now Playing: %s" title)
-               (format "Artist: %s\nAlbum: %s" artist album)))))))
-
-(defun emms-signal-waybar-mpd-update ()
-  "Signal waybar to update its MPD widget."
-  (start-process "emms-signal-waybar" nil "pkill" "-RTMIN+8" "waybar"))
-
-;; Hooks for EMMS modes - use with-eval-after-load to avoid premature loading
-(with-eval-after-load 'emms-browser
-  (add-hook 'emms-browser-mode-hook
-            (lambda ()
-              (face-remap-add-relative 'default '(:background "#1a1d21"))
-              (emms-center-buffer-in-frame))))
-
-(with-eval-after-load 'emms-playlist-mode
-  (add-hook 'emms-playlist-mode-hook
-            (lambda ()
-              (face-remap-add-relative 'default '(:background "#1a1d21"))
-              (emms-center-buffer-in-frame))))
-
-;; Window resize hook - only add when EMMS is actually loaded
-(with-eval-after-load 'emms
-  (add-hook 'window-size-change-functions
-            (lambda (_)
-              (when (or (eq major-mode 'emms-browser-mode)
-                        (eq major-mode 'emms-playlist-mode))
-                (emms-center-buffer-in-frame)))))
-
-;; Keybindings
-(map! :leader
-      (:prefix ("m" . "Music")
-       ;; EMMS/MPD controls
-       :desc "Update from MPD" "u" #'my/update-emms-from-mpd
-       :desc "Play at directory tree" "d" #'emms-play-directory-tree
-       :desc "Go to emms playlist" "p" #'emms-playlist-mode-go
-       :desc "Shuffle" "h" #'emms-shuffle
-       :desc "Emms pause track" "x" #'emms-pause
-       :desc "Emms stop track" "s" #'emms-stop
-       :desc "Emms play previous track" "b" #'emms-previous
-       :desc "Emms play next track" "n" #'emms-next
-       :desc "EMMS Browser" "o" #'emms-browser
-       
-       ;; Spotify/spotifyd controls (submenu)
-       (:prefix ("S" . "Spotify")
-        :desc "Start spotifyd" "s" #'my/spotifyd-start
-        :desc "Stop spotifyd" "k" #'my/spotifyd-stop
-        :desc "Restart spotifyd" "r" #'my/spotifyd-restart
-        :desc "Track info" "i" #'my/spotify-info
-        :desc "Play/Pause" "SPC" #'my/spotify-play-pause
-        :desc "Next track" "n" #'my/spotify-next
-        :desc "Previous track" "p" #'my/spotify-prev)))
-;; Optional: Waybar signal hook (uncomment if using waybar)
-;; (with-eval-after-load 'emms
-;;   (add-hook 'emms-player-started-hook 'emms-signal-waybar-mpd-update))
-
-;; Spotifyd integration - lightweight Spotify client daemon
-;; Start/stop spotifyd daemon
 (defun my/spotifyd-start ()
   "Start spotifyd daemon."
   (interactive)
   (async-shell-command "spotifyd --no-daemon" "*spotifyd*")
-  (message "Spotifyd started"))
+  (message "Spotifyd started - device: Marko-NixOS"))
 
 (defun my/spotifyd-stop ()
-  "Stop spotifyd daemon."
+  "Stop spotifyd."
   (interactive)
   (shell-command "killall spotifyd")
   (message "Spotifyd stopped"))
 
 (defun my/spotifyd-restart ()
-  "Restart spotifyd daemon."
+  "Restart spotifyd."
   (interactive)
   (my/spotifyd-stop)
   (sit-for 1)
   (my/spotifyd-start))
-;; Show current Spotify playback info (if you have playerctl)
+
 (defun my/spotify-info ()
-  "Show current Spotify track info."
+  "Show track info."
   (interactive)
   (let ((info (shell-command-to-string
                "playerctl -p spotifyd metadata --format '{{ artist }} - {{ title }}' 2>/dev/null")))
     (if (string-empty-p (string-trim info))
-        (message "Spotifyd not playing or not running")
+        (message "Spotifyd not playing")
       (message "♫ %s" (string-trim info)))))
 
-;; Control Spotify via MPRIS (if you have playerctl)
 (defun my/spotify-play-pause ()
-  "Toggle Spotify playback."
+  "Toggle playback."
   (interactive)
   (shell-command "playerctl -p spotifyd play-pause 2>/dev/null")
   (sit-for 0.2)
   (my/spotify-info))
 
 (defun my/spotify-next ()
-  "Next Spotify track."
+  "Next track."
   (interactive)
   (shell-command "playerctl -p spotifyd next 2>/dev/null")
   (sit-for 0.5)
   (my/spotify-info))
 
 (defun my/spotify-prev ()
-  "Previous Spotify track."
+  "Previous track."
   (interactive)
   (shell-command "playerctl -p spotifyd previous 2>/dev/null")
   (sit-for 0.5)
   (my/spotify-info))
+
+(defun my/spotifydl-track ()
+  "Download track."
+  (interactive)
+  (let ((url (read-string "Track URL: "))
+        (dir (read-directory-name "Save to: " "~/MusicOrganized/")))
+    (async-shell-command
+     (format "spotifydl download --url '%s' --output '%s'" url dir)
+     "*spotifydl*")
+    (message "Downloading to %s" dir)))
+
+(defun my/spotifydl-playlist ()
+  "Download playlist."
+  (interactive)
+  (let ((url (read-string "Playlist URL: "))
+        (dir (read-directory-name "Save to: " "~/MusicOrganized/")))
+    (async-shell-command
+     (format "spotifydl download --url '%s' --output '%s'" url dir)
+     "*spotifydl*")
+    (message "Downloading playlist to %s" dir)))
+
+(defun my/spotifydl-album ()
+  "Download album."
+  (interactive)
+  (let ((url (read-string "Album URL: "))
+        (dir (read-directory-name "Save to: " "~/MusicOrganized/")))
+    (async-shell-command
+     (format "spotifydl download --url '%s' --output '%s'" url dir)
+     "*spotifydl*")
+    (message "Downloading album to %s" dir)))
+
+(defun my/spotifydl-from-clipboard ()
+  "Download from clipboard."
+  (interactive)
+  (let ((url (current-kill 0))
+        (dir (read-directory-name "Save to: " "~/MusicOrganized/")))
+    (if (string-match-p "spotify\\.com\\|spotify:" url)
+        (progn
+          (async-shell-command
+           (format "spotifydl download --url '%s' --output '%s'" url dir)
+           "*spotifydl*")
+          (message "Downloading from clipboard"))
+      (message "No Spotify URL in clipboard"))))
+
+;; Smudge - Full Spotify integration via Web API
+;; Ready for when Spotify reopens developer app registration
+;; Docs: https://github.com/danielfm/smudge
+
+ Step 1: Create app at https://developer.spotify.com/dashboard
+ Step 2: Add redirect URI: http://localhost:8080/smudge-api-callback
+ Step 3: Store credentials in pass:
+         pass insert spotify/client-id
+         pass insert spotify/client-secret
+
+ (use-package! smudge
+   :defer t
+   :config
+   (setq smudge-oauth2-client-id 
+         (string-trim (shell-command-to-string "pass show spotify/client-id"))
+         smudge-oauth2-client-secret 
+         (string-trim (shell-command-to-string "pass show spotify/client-secret"))
+         smudge-player-status-format "♫ %a - %t")
+   
+   ;; Smudge keybindings
+   (map! :leader
+         :prefix ("m s" . "spotify")
+         :desc "Play/Pause" "SPC" #'smudge-controller-toggle-play
+         :desc "Next track" "n" #'smudge-controller-next-track
+         :desc "Previous track" "p" #'smudge-controller-previous-track
+         :desc "Search track" "t" #'smudge-track-search
+         :desc "Search playlist" "l" #'smudge-playlist-search
+         :desc "My playlists" "m" #'smudge-my-playlists
+         :desc "Recently played" "r" #'smudge-recently-played
+         :desc "Current track" "i" #'smudge-track-info))
+
+(map! :leader
+      :prefix ("m" . "music")
+      
+      ;; EMMS
+      :desc "Open EMMS" "e" #'emms
+      :desc "Browser" "b" #'emms-browser
+      :desc "Playlist" "p" #'emms-playlist-mode-go
+      :desc "Play/Pause" "SPC" #'emms-pause
+      :desc "Stop" "s" #'emms-stop
+      :desc "Next" "n" #'emms-next
+      :desc "Previous" "P" #'emms-previous
+      :desc "Shuffle" "r" #'emms-shuffle
+      
+      ;; Spotifyd daemon
+      (:prefix ("d" . "daemon")
+       :desc "Start" "s" #'my/spotifyd-start
+       :desc "Stop" "k" #'my/spotifyd-stop
+       :desc "Restart" "r" #'my/spotifyd-restart
+       :desc "Info" "i" #'my/spotify-info
+       :desc "Play/Pause" "SPC" #'my/spotify-play-pause
+       :desc "Next" "n" #'my/spotify-next
+       :desc "Previous" "p" #'my/spotify-prev)
+      
+      ;; Downloads
+      (:prefix ("l" . "download")
+       :desc "Track" "t" #'my/spotifydl-track
+       :desc "Playlist" "p" #'my/spotifydl-playlist
+       :desc "Album" "a" #'my/spotifydl-album
+       :desc "From clipboard" "c" #'my/spotifydl-from-clipboard))
 
 ;; Nov.el customizations and setup
 (setq nov-unzip-program (executable-find "bsdtar")
