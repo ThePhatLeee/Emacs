@@ -1252,8 +1252,8 @@ This function is designed to be called via `emacsclient -e`."
       :desc "Clear context" "x" #'claude-code-ide-clear-context)
 
 ;; Quick access
-(map! :leader
-      :desc "Quick Claude Chat" "C" #'claude-code-ide-chat)
+;;(map! :leader
+;;      :desc "Quick Claude Chat" "C" #'claude-code-ide-chat)
 
 (after! magit
   (defun my/magit-stage-commit-push ()

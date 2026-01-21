@@ -1403,8 +1403,8 @@ Add Astro and svelte files to web-mode automatically:
       :desc "Clear context" "x" #'claude-code-ide-clear-context)
 
 ;; Quick access
-(map! :leader
-      :desc "Quick Claude Chat" "C" #'claude-code-ide-chat)
+;;(map! :leader
+;;      :desc "Quick Claude Chat" "C" #'claude-code-ide-chat)
 #+end_src
 
 ** Magit
