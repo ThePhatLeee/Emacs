@@ -1631,14 +1631,14 @@ Changes environment to bash for compilation commands (ie. zig-run go-test etc.)
        :desc "Matrix view room"         "M" #'my/matrix-room
        
        ;; Signal Sub-prefix
-       (:prefix ("S" . "Signal")
+       (:prefix ("s" . "Signal")
         :desc "Open gurk TUI"           "s" #'my/signal-open
         :desc "Signal Desktop"          "d" #'my/signal-desktop
         :desc "Send quick message"      "m" #'my/signal-send-quick
         :desc "Edit config"             "c" #'my/signal-config)
 
        ;; NEW AI SUB-PREFIX - SPC e a
-       (:prefix ("a" . "AI Tools")
+       (:prefix ("a" . "ai Tools")
         :desc "Chat with Claude"        "c" #'claude-code-ide-chat
         :desc "Start Claude session"    "s" #'claude-code-ide-start
         :desc "Edit current file"       "e" #'claude-code-ide-edit-file
@@ -1874,48 +1874,48 @@ Changes environment to bash for compilation commands (ie. zig-run go-test etc.)
 
 *** Music Keybindings
 #+begin_src elisp
-;; MUSIC - SPC m (PROPERLY NESTED)
+;; MUSIC - SPC m
 (map! :leader
       :prefix ("m" . "music")
-      
-      ;; ─── EMMS - Primary music player (top level) ───
-      :desc "EMMS Browser"             "e" #'emms-browser
-      :desc "EMMS Playlist"            "p" #'emms-playlist-mode-go
-      :desc "Play/Pause"               "SPC" #'emms-pause
-      :desc "Stop"                     "s" #'emms-stop
-      :desc "Next"                     "n" #'emms-next
-      :desc "Previous"                 "b" #'emms-previous
-      :desc "Shuffle"                  "h" #'emms-shuffle
-      :desc "Update from MPD"          "u" #'my/update-emms-from-mpd
-      :desc "Play directory tree"      "d" #'emms-play-directory-tree
-      
-      ;; ─── Spotify API (Smudge) - nested ───
-      (:prefix ("S" . "spotify-smudge")
-       :desc "Play/Pause"               "SPC" #'smudge-controller-toggle-play
-       :desc "Next track"               "n" #'smudge-controller-next-track
-       :desc "Previous track"           "p" #'smudge-controller-previous-track
-       :desc "Search track"             "t" #'smudge-track-search
-       :desc "Search playlist"          "l" #'smudge-playlist-search
-       :desc "My playlists"             "m" #'smudge-my-playlists
-       :desc "Recently played"          "r" #'smudge-recently-played
-       :desc "Current track"            "i" #'smudge-track-info)
-      
-      ;; ─── Spotifyd Daemon - nested ───
-      (:prefix ("D" . "daemon")
-       :desc "Start"                    "s" #'my/spotifyd-start
-       :desc "Stop"                     "k" #'my/spotifyd-stop
-       :desc "Restart"                  "r" #'my/spotifyd-restart
-       :desc "Info"                     "i" #'my/spotify-info
-       :desc "Play/Pause"               "SPC" #'my/spotify-play-pause
-       :desc "Next"                     "n" #'my/spotify-next
-       :desc "Previous"                 "p" #'my/spotify-prev)
-      
-      ;; ─── Downloads - nested ───
-      (:prefix ("l" . "download")
-       :desc "Track"                    "t" #'my/spotifydl-track
-       :desc "Playlist"                 "p" #'my/spotifydl-playlist
-       :desc "Album"                    "a" #'my/spotifydl-album
-       :desc "From clipboard"           "c" #'my/spotifydl-from-clipboard))
+
+      ;; ─── SPOTIFY (Smudge) - Primary/Top Level ───
+      :desc "Play/Pause"        "SPC" #'smudge-controller-toggle-play
+      :desc "Next track"        "n"   #'smudge-controller-next-track
+      :desc "Previous track"    "p"   #'smudge-controller-previous-track
+      :desc "Search track"      "t"   #'smudge-track-search
+      :desc "Search playlist"   "l"   #'smudge-playlist-search
+      :desc "My playlists"      "m"   #'smudge-my-playlists
+      :desc "Recently played"   "r"   #'smudge-recently-played
+      :desc "Current track"     "i"   #'smudge-track-info
+
+      ;; ─── SPOTIFYD DAEMON - Nested ───
+      (:prefix ("d" . "daemon")
+       :desc "Start"            "s"   #'my/spotifyd-start
+       :desc "Stop"             "k"   #'my/spotifyd-stop
+       :desc "Restart"          "r"   #'my/spotifyd-restart
+       :desc "Info"             "i"   #'my/spotify-info
+       :desc "Play/Pause"       "SPC" #'my/spotify-play-pause
+       :desc "Next"             "n"   #'my/spotify-next
+       :desc "Previous"         "p"   #'my/spotify-prev)
+
+      ;; ─── DOWNLOADS - Nested ───
+      (:prefix ("y" . "download") ;; Changed to 'y' for 'youtube-dl/yt-dlp' style, or keep 'l'
+       :desc "Track"            "t"   #'my/spotifydl-track
+       :desc "Playlist"         "p"   #'my/spotifydl-playlist
+       :desc "Album"            "a"   #'my/spotifydl-album
+       :desc "From clipboard"   "c"   #'my/spotifydl-from-clipboard)
+
+      ;; ─── EMMS - Moved to Last (Least used) ───
+      (:prefix ("e" . "emms")
+       :desc "EMMS Browser"     "E"   #'emms-browser
+       :desc "EMMS Playlist"    "P"   #'emms-playlist-mode-go
+       :desc "Play/Pause"       "SPC" #'emms-pause
+       :desc "Stop"             "S"   #'emms-stop
+       :desc "Next"             "N"   #'emms-next
+       :desc "Previous"         "B"   #'emms-previous
+       :desc "Shuffle"          "H"   #'emms-shuffle
+       :desc "Update from MPD"  "U"   #'my/update-emms-from-mpd
+       :desc "Play directory tree" "D" #'emms-play-directory-tree))
 #+end_src
 
 *** Smudge Configuration (Spotify Web API)
