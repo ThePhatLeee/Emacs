@@ -1239,22 +1239,6 @@ This function is designed to be called via `emacsclient -e`."
         claude-code-ide-response-buffer-name "*Claude*"
         claude-code-ide-show-response-buffer t))
 
-;; AI keybindings - SPC a prefix
-(map! :leader
-      :prefix ("a" . "ai")
-      :desc "Chat with Claude" "c" #'claude-code-ide-chat
-      :desc "Start Claude session" "s" #'claude-code-ide-start
-      :desc "Edit current file" "e" #'claude-code-ide-edit-file
-      :desc "Show diff" "d" #'claude-code-ide-diff
-      :desc "Cancel request" "k" #'claude-code-ide-cancel
-      :desc "Add file to context" "f" #'claude-code-ide-add-file
-      :desc "Add region to context" "r" #'claude-code-ide-add-region
-      :desc "Clear context" "x" #'claude-code-ide-clear-context)
-
-;; Quick access
-;;(map! :leader
-;;      :desc "Quick Claude Chat" "C" #'claude-code-ide-chat)
-
 (after! magit
   (defun my/magit-stage-commit-push ()
     "Stage all, commit with quick message, and push with no questions"
@@ -1415,8 +1399,23 @@ This function is designed to be called via `emacsclient -e`."
 (global-set-key (kbd "C-=") 'text-scale-increase)
 (global-set-key (kbd "C--") 'text-scale-decrease)
 
-;; Keybindings
 (map! :leader
+      ;; AI keybindings - SPC a prefix
+      :prefix ("a" . "ai")
+      :desc "Chat with Claude" "c" #'claude-code-ide-chat
+      :desc "Start Claude session" "s" #'claude-code-ide-start
+      :desc "Edit current file" "e" #'claude-code-ide-edit-file
+      :desc "Show diff" "d" #'claude-code-ide-diff
+      :desc "Cancel request" "k" #'claude-code-ide-cancel
+      :desc "Add file to context" "f" #'claude-code-ide-add-file
+      :desc "Add region to context" "r" #'claude-code-ide-add-region
+      :desc "Clear context" "x" #'claude-code-ide-clear-context)
+
+      Quick access
+      (map! :leader
+      :desc "Quick Claude Chat" "C" #'claude-code-ide-chat)
+
+
       ;; GIT - SPC g
       (:prefix ("g" . "magit")
        :desc "Stage all files"          "a" #'magit-stage-modified

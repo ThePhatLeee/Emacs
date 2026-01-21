@@ -1389,22 +1389,6 @@ Add Astro and svelte files to web-mode automatically:
         claude-code-ide-temperature 0.7
         claude-code-ide-response-buffer-name "*Claude*"
         claude-code-ide-show-response-buffer t))
-
-;; AI keybindings - SPC a prefix
-(map! :leader
-      :prefix ("a" . "ai")
-      :desc "Chat with Claude" "c" #'claude-code-ide-chat
-      :desc "Start Claude session" "s" #'claude-code-ide-start
-      :desc "Edit current file" "e" #'claude-code-ide-edit-file
-      :desc "Show diff" "d" #'claude-code-ide-diff
-      :desc "Cancel request" "k" #'claude-code-ide-cancel
-      :desc "Add file to context" "f" #'claude-code-ide-add-file
-      :desc "Add region to context" "r" #'claude-code-ide-add-region
-      :desc "Clear context" "x" #'claude-code-ide-clear-context)
-
-;; Quick access
-;;(map! :leader
-;;      :desc "Quick Claude Chat" "C" #'claude-code-ide-chat)
 #+end_src
 
 ** Magit
@@ -1609,8 +1593,23 @@ Changes environment to bash for compilation commands (ie. zig-run go-test etc.)
 
 ** General
 #+begin_src elisp
-;; Keybindings
 (map! :leader
+      ;; AI keybindings - SPC a prefix
+      :prefix ("a" . "ai")
+      :desc "Chat with Claude" "c" #'claude-code-ide-chat
+      :desc "Start Claude session" "s" #'claude-code-ide-start
+      :desc "Edit current file" "e" #'claude-code-ide-edit-file
+      :desc "Show diff" "d" #'claude-code-ide-diff
+      :desc "Cancel request" "k" #'claude-code-ide-cancel
+      :desc "Add file to context" "f" #'claude-code-ide-add-file
+      :desc "Add region to context" "r" #'claude-code-ide-add-region
+      :desc "Clear context" "x" #'claude-code-ide-clear-context)
+
+      Quick access
+      (map! :leader
+      :desc "Quick Claude Chat" "C" #'claude-code-ide-chat)
+
+
       ;; GIT - SPC g
       (:prefix ("g" . "magit")
        :desc "Stage all files"          "a" #'magit-stage-modified
