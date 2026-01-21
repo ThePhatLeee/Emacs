@@ -1371,13 +1371,10 @@ Add Astro and svelte files to web-mode automatically:
                     claude-sonnet-3-7))))
 #+end_src
 
-** Claude Code IDE
+*** Claude Code IDE
 #+begin_src elisp
-;; Claude Code IDE - Native Emacs integration for Claude AI
-;; Uses GPtel as the backend for API communication
 (use-package! claude-code-ide
   :defer t
-  :after gptel
   :commands (claude-code-ide-start
              claude-code-ide-chat
              claude-code-ide-edit-file
@@ -1387,14 +1384,13 @@ Add Astro and svelte files to web-mode automatically:
              claude-code-ide-add-region
              claude-code-ide-clear-context)
   :config
-  ;; Configuration - uses GPtel's backend
   (setq claude-code-ide-model "claude-sonnet-4-20250514"
         claude-code-ide-max-tokens 8192
         claude-code-ide-temperature 0.7
         claude-code-ide-response-buffer-name "*Claude*"
         claude-code-ide-show-response-buffer t))
 
-;; Keybindings for Claude Code IDE
+;; AI keybindings - SPC a prefix
 (map! :leader
       :prefix ("a" . "ai")
       :desc "Chat with Claude" "c" #'claude-code-ide-chat
@@ -1406,7 +1402,7 @@ Add Astro and svelte files to web-mode automatically:
       :desc "Add region to context" "r" #'claude-code-ide-add-region
       :desc "Clear context" "x" #'claude-code-ide-clear-context)
 
-;; Quick access binding
+;; Quick access
 (map! :leader
       :desc "Quick Claude Chat" "C" #'claude-code-ide-chat)
 #+end_src
@@ -1613,19 +1609,19 @@ Changes environment to bash for compilation commands (ie. zig-run go-test etc.)
 
 ** General
 #+begin_src elisp
-;; Custom keymaps
+;; Keybindings
 (map! :leader
-      ;; Magit mode mappings
-      (:prefix ("g" . "magit")  ; Use 'g' as the main prefix
+      ;; GIT - SPC g
+      (:prefix ("g" . "magit")
        :desc "Stage all files"          "a" #'magit-stage-modified
-       :desc "goto function definition" "d" #'evil-goto-definition
+       :desc "Goto function definition" "d" #'evil-goto-definition
        :desc "Push"                     "P" #'magit-push
        :desc "Pull"                     "p" #'magit-pull
        :desc "Merge"                    "m" #'magit-merge
-       :desc "Quick commit and push"    "z" #'my/magit-stage-commit-push
-       )
-      ;; Org mode mappings
-      (:prefix("y" . "org-mode-specifics")
+       :desc "Quick commit and push"    "z" #'my/magit-stage-commit-push)
+      
+      ;; ORG MODE - SPC y
+      (:prefix ("y" . "org-mode-specifics")
        :desc "MU4E org mode"                    "m" #'mu4e-org-mode
        :desc "Mail add attachment"              "a" #'mail-add-attachment
        :desc "Export as markdown"               "e" #'org-md-export-as-markdown
@@ -1636,35 +1632,51 @@ Changes environment to bash for compilation commands (ie. zig-run go-test etc.)
        :desc "Powerthesaurus lookup word"       "t" #'powerthesaurus-lookup-word-at-point
        :desc "Read Aloud This"                  "r" #'read-aloud-this
        :desc "Export as LaTeX then PDF"         "l" #'org-latex-export-to-pdf
-       :desc "spell check"                      "z" #'ispell-word
-       :desc "Find definition"                  "f" #'lsp-find-definition
-       )
-      ;; Mappings for Elfeed, Communications, and AI
-      (:prefix("e" . "Communications/AI")
+       :desc "Spell check"                      "z" #'ispell-word
+       :desc "Find definition"                  "f" #'lsp-find-definition)
+      
+      ;; COMMUNICATIONS & AI - SPC e
+      (:prefix ("e" . "Elfeed/ERC/AI")
        :desc "Open elfeed"              "e" #'elfeed
-       :desc "Open ERC (IRC)"           "r" #'my/erc-connect
+       :desc "Update elfeed"            "u" #'elfeed-update
+       :desc "MPV watch video"          "v" #'elfeed-tube-mpv
+       :desc "Open ERC (IRC)"           "r" #'erc
+       :desc "Open EWW Browser"         "w" #'eww
+       :desc "Open Elpher"              "l" #'elpher
+       :desc "Open Pass"                "p" #'pass
        :desc "Open Matrix"              "m" #'my/matrix-connect
        :desc "Matrix view room"         "M" #'my/matrix-room
        (:prefix ("S" . "Signal")
         :desc "Open gurk TUI"           "s" #'my/signal-open
         :desc "Signal Desktop"          "d" #'my/signal-desktop
         :desc "Send quick message"      "m" #'my/signal-send-quick
-        :desc "Edit config"             "c" #'my/signal-config)  
-       :desc "Open EWW Browser"         "w" #'eww
-       :desc "Update elfeed"            "u" #'elfeed-update
-       :desc "MPV watch video"          "v" #'elfeed-tube-mpv
-       :desc "Open Elpher"              "l" #'elpher
-       :desc "Open Pass"                "p" #'pass
-       :desc "Claude chat (gptel)"      "g" #'gptel
-       )
-      ;; Various other commands
-      (:prefix("o" . "open")
+        :desc "Edit config"             "c" #'my/signal-config)
+       :desc "Claude chat (gptel)"      "g" #'gptel)
+      
+      ;; OPEN COMMANDS - SPC o
+      (:prefix ("o" . "open")
        :desc "Calendar"                  "c" #'=calendar
        :desc "Bookmarks"                 "l" #'list-bookmarks
-       )
-      (:prefix("b" . "+buffer")
-       :desc "Save Bookmarks"                 "P" #'bookmark-save
-       ))
+       :desc "Dirvish"                   "d" #'dirvish
+       :desc "Refresh GPG passphrase"    "g" #'my/preset-gpg-passphrase)
+      
+      ;; BUFFER - SPC b
+      (:prefix ("b" . "+buffer")
+       :desc "Save Bookmarks"            "P" #'bookmark-save)
+      
+      ;; SEARCH - SPC s
+      (:prefix-map ("s" . "search")
+       :desc "Search project"            "p" #'consult-ripgrep
+       :desc "Search buffer"             "s" #'consult-line
+       :desc "Search project files"      "f" #'consult-find
+       :desc "Command history"           "h" #'consult-history
+       :desc "Recent directories"        "d" #'consult-dir)
+      
+      ;; EMBARK - SPC k
+      (:prefix ("k" . "embark")
+       :desc "Embark act"                "a" #'embark-act
+       :desc "Embark dwim"               "d" #'embark-dwim
+       :desc "Embark collect"            "c" #'embark-collect))
 
 ;; Saving
 (map! "C-s" #'save-buffer)
@@ -1693,8 +1705,8 @@ Changes environment to bash for compilation commands (ie. zig-run go-test etc.)
                         (evil-window-decrease-height 2)
                       (evil-window-increase-height 2))))
 
-(map! :n "<C-tab>"   #'centaur-tabs-forward    ; normal mode only
-      :n "<C-iso-lefttab>" #'centaur-tabs-backward)  ; normal mode only
+(map! :n "<C-tab>"   #'centaur-tabs-forward
+      :n "<C-iso-lefttab>" #'centaur-tabs-backward)
 
 ;; setting avy for quick jump forward/backward
 (define-key evil-normal-state-map "f" 'avy-goto-char-2)
@@ -1706,13 +1718,6 @@ Changes environment to bash for compilation commands (ie. zig-run go-test etc.)
 (define-key org-read-date-minibuffer-local-map (kbd "<right>") (lambda () (interactive) (org-eval-in-calendar '(calendar-forward-day 1))))
 (define-key org-read-date-minibuffer-local-map (kbd "<up>") (lambda () (interactive) (org-eval-in-calendar '(calendar-backward-week 1))))
 (define-key org-read-date-minibuffer-local-map (kbd "<down>") (lambda () (interactive) (org-eval-in-calendar '(calendar-forward-week 1)))))
-
-;; Additional Consult bindings
-(map! :leader
-      (:prefix-map ("s" . "search")
-       :desc "Search project" "p" #'consult-ripgrep
-       :desc "Search buffer" "s" #'consult-line
-       :desc "Search project files" "f" #'consult-find))
 #+end_src
 
 ** Projectile
@@ -1871,71 +1876,81 @@ Changes environment to bash for compilation commands (ie. zig-run go-test etc.)
       (message "No Spotify URL in clipboard"))))
 #+end_src
 
-*** Smudge - Spotify Web API
+
+*** Music Keybindings
+#+begin_src elisp
+;; MUSIC - SPC m (PROPERLY NESTED)
+(map! :leader
+      :prefix ("m" . "music")
+      
+      ;; ─── EMMS - Primary music player (top level) ───
+      :desc "EMMS Browser"             "e" #'emms-browser
+      :desc "EMMS Playlist"            "p" #'emms-playlist-mode-go
+      :desc "Play/Pause"               "SPC" #'emms-pause
+      :desc "Stop"                     "s" #'emms-stop
+      :desc "Next"                     "n" #'emms-next
+      :desc "Previous"                 "b" #'emms-previous
+      :desc "Shuffle"                  "h" #'emms-shuffle
+      :desc "Update from MPD"          "u" #'my/update-emms-from-mpd
+      :desc "Play directory tree"      "d" #'emms-play-directory-tree
+      
+      ;; ─── Spotify API (Smudge) - nested ───
+      (:prefix ("S" . "spotify-smudge")
+       :desc "Play/Pause"               "SPC" #'smudge-controller-toggle-play
+       :desc "Next track"               "n" #'smudge-controller-next-track
+       :desc "Previous track"           "p" #'smudge-controller-previous-track
+       :desc "Search track"             "t" #'smudge-track-search
+       :desc "Search playlist"          "l" #'smudge-playlist-search
+       :desc "My playlists"             "m" #'smudge-my-playlists
+       :desc "Recently played"          "r" #'smudge-recently-played
+       :desc "Current track"            "i" #'smudge-track-info)
+      
+      ;; ─── Spotifyd Daemon - nested ───
+      (:prefix ("D" . "daemon")
+       :desc "Start"                    "s" #'my/spotifyd-start
+       :desc "Stop"                     "k" #'my/spotifyd-stop
+       :desc "Restart"                  "r" #'my/spotifyd-restart
+       :desc "Info"                     "i" #'my/spotify-info
+       :desc "Play/Pause"               "SPC" #'my/spotify-play-pause
+       :desc "Next"                     "n" #'my/spotify-next
+       :desc "Previous"                 "p" #'my/spotify-prev)
+      
+      ;; ─── Downloads - nested ───
+      (:prefix ("l" . "download")
+       :desc "Track"                    "t" #'my/spotifydl-track
+       :desc "Playlist"                 "p" #'my/spotifydl-playlist
+       :desc "Album"                    "a" #'my/spotifydl-album
+       :desc "From clipboard"           "c" #'my/spotifydl-from-clipboard))
+#+end_src
+
+*** Smudge Configuration (Spotify Web API)
 #+begin_src elisp
 ;; Smudge - Full Spotify integration via Web API
 ;; Ready for when Spotify reopens developer app registration
 ;; Docs: https://github.com/danielfm/smudge
 
- Step 1: Create app at https://developer.spotify.com/dashboard
- Step 2: Add redirect URI: http://localhost:8080/smudge-api-callback
- Step 3: Store credentials in pass:
-         pass insert spotify/client-id
-         pass insert spotify/client-secret
+;; Step 1: Create app at https://developer.spotify.com/dashboard
+;; Step 2: Add redirect URI: http://localhost:8080/smudge-api-callback
+;; Step 3: Store credentials in pass:
+;;         pass insert spotify/client-id
+;;         pass insert spotify/client-secret
 
- (use-package! smudge
-   :defer t
-   :config
-   (setq smudge-oauth2-client-id 
-         (string-trim (shell-command-to-string "pass show spotify/client-id"))
-         smudge-oauth2-client-secret 
-         (string-trim (shell-command-to-string "pass show spotify/client-secret"))
-         smudge-player-status-format "♫ %a - %t")
-   
-   ;; Smudge keybindings
-   (map! :leader
-         :prefix ("m s" . "spotify")
-         :desc "Play/Pause" "SPC" #'smudge-controller-toggle-play
-         :desc "Next track" "n" #'smudge-controller-next-track
-         :desc "Previous track" "p" #'smudge-controller-previous-track
-         :desc "Search track" "t" #'smudge-track-search
-         :desc "Search playlist" "l" #'smudge-playlist-search
-         :desc "My playlists" "m" #'smudge-my-playlists
-         :desc "Recently played" "r" #'smudge-recently-played
-         :desc "Current track" "i" #'smudge-track-info))
-#+end_src
-
-*** Music Keybindings
-#+begin_src elisp
-(map! :leader
-      :prefix ("m" . "music")
-      
-      ;; EMMS
-      :desc "Open EMMS" "e" #'emms
-      :desc "Browser" "b" #'emms-browser
-      :desc "Playlist" "p" #'emms-playlist-mode-go
-      :desc "Play/Pause" "SPC" #'emms-pause
-      :desc "Stop" "s" #'emms-stop
-      :desc "Next" "n" #'emms-next
-      :desc "Previous" "P" #'emms-previous
-      :desc "Shuffle" "r" #'emms-shuffle
-      
-      ;; Spotifyd daemon
-      (:prefix ("d" . "daemon")
-       :desc "Start" "s" #'my/spotifyd-start
-       :desc "Stop" "k" #'my/spotifyd-stop
-       :desc "Restart" "r" #'my/spotifyd-restart
-       :desc "Info" "i" #'my/spotify-info
-       :desc "Play/Pause" "SPC" #'my/spotify-play-pause
-       :desc "Next" "n" #'my/spotify-next
-       :desc "Previous" "p" #'my/spotify-prev)
-      
-      ;; Downloads
-      (:prefix ("l" . "download")
-       :desc "Track" "t" #'my/spotifydl-track
-       :desc "Playlist" "p" #'my/spotifydl-playlist
-       :desc "Album" "a" #'my/spotifydl-album
-       :desc "From clipboard" "c" #'my/spotifydl-from-clipboard))
+(use-package! smudge
+  :defer t
+  :commands (smudge-controller-toggle-play
+             smudge-controller-next-track
+             smudge-controller-previous-track
+             smudge-track-search
+             smudge-playlist-search
+             smudge-my-playlists
+             smudge-recently-played
+             smudge-track-info)
+  :config
+  (setq smudge-oauth2-client-id 
+        (string-trim (shell-command-to-string "pass show spotify/client-id"))
+        smudge-oauth2-client-secret 
+        (string-trim (shell-command-to-string "pass show spotify/client-secret"))
+        smudge-player-status-format "♫ %a - %t"))
 #+end_src
 
 ** Reading
