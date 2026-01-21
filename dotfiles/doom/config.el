@@ -1233,7 +1233,7 @@ This function is designed to be called via `emacsclient -e`."
              claude-code-ide-add-region
              claude-code-ide-clear-context)
   :config
-  (setq claude-code-ide-model "claude-sonnet-4-20250514"
+  (setq claude-code-ide-model "claude-sonnet-4-5"
         claude-code-ide-max-tokens 8192
         claude-code-ide-temperature 0.7
         claude-code-ide-response-buffer-name "*Claude*"
@@ -1400,25 +1400,9 @@ This function is designed to be called via `emacsclient -e`."
 (global-set-key (kbd "C--") 'text-scale-decrease)
 
 (map! :leader
-      ;; AI keybindings - SPC a prefix
-      :prefix ("a" . "ai")
-      :desc "Chat with Claude" "c" #'claude-code-ide-chat
-      :desc "Start Claude session" "s" #'claude-code-ide-start
-      :desc "Edit current file" "e" #'claude-code-ide-edit-file
-      :desc "Show diff" "d" #'claude-code-ide-diff
-      :desc "Cancel request" "k" #'claude-code-ide-cancel
-      :desc "Add file to context" "f" #'claude-code-ide-add-file
-      :desc "Add region to context" "r" #'claude-code-ide-add-region
-      :desc "Clear context" "x" #'claude-code-ide-clear-context)
-
-      Quick access
-      (map! :leader
-      :desc "Quick Claude Chat" "C" #'claude-code-ide-chat)
-
-
       ;; GIT - SPC g
       (:prefix ("g" . "magit")
-       :desc "Stage all files"          "a" #'magit-stage-modified
+       :desc "Stage all files"           "a" #'magit-stage-modified
        :desc "Goto function definition" "d" #'evil-goto-definition
        :desc "Push"                     "P" #'magit-push
        :desc "Pull"                     "p" #'magit-pull
@@ -1441,7 +1425,7 @@ This function is designed to be called via `emacsclient -e`."
        :desc "Find definition"                  "f" #'lsp-find-definition)
       
       ;; COMMUNICATIONS & AI - SPC e
-      (:prefix ("e" . "Elfeed/ERC/AI")
+      (:prefix ("e" . "Comm/AI")
        :desc "Open elfeed"              "e" #'elfeed
        :desc "Update elfeed"            "u" #'elfeed-update
        :desc "MPV watch video"          "v" #'elfeed-tube-mpv
@@ -1451,12 +1435,25 @@ This function is designed to be called via `emacsclient -e`."
        :desc "Open Pass"                "p" #'pass
        :desc "Open Matrix"              "m" #'my/matrix-connect
        :desc "Matrix view room"         "M" #'my/matrix-room
+       
+       ;; Signal Sub-prefix
        (:prefix ("S" . "Signal")
         :desc "Open gurk TUI"           "s" #'my/signal-open
         :desc "Signal Desktop"          "d" #'my/signal-desktop
         :desc "Send quick message"      "m" #'my/signal-send-quick
         :desc "Edit config"             "c" #'my/signal-config)
-       :desc "Claude chat (gptel)"      "g" #'gptel)
+
+       ;; NEW AI SUB-PREFIX - SPC e a
+       (:prefix ("a" . "AI Tools")
+        :desc "Chat with Claude"        "c" #'claude-code-ide-chat
+        :desc "Start Claude session"    "s" #'claude-code-ide-start
+        :desc "Edit current file"       "e" #'claude-code-ide-edit-file
+        :desc "Show diff"               "d" #'claude-code-ide-diff
+        :desc "Cancel request"          "k" #'claude-code-ide-cancel
+        :desc "Add file to context"     "f" #'claude-code-ide-add-file
+        :desc "Add region to context"   "r" #'claude-code-ide-add-region
+        :desc "Clear context"           "x" #'claude-code-ide-clear-context
+        :desc "Claude chat (gptel)"     "g" #'gptel))
       
       ;; OPEN COMMANDS - SPC o
       (:prefix ("o" . "open")
@@ -1470,7 +1467,7 @@ This function is designed to be called via `emacsclient -e`."
        :desc "Save Bookmarks"            "P" #'bookmark-save)
       
       ;; SEARCH - SPC s
-      (:prefix-map ("s" . "search")
+      (:prefix ("s" . "search")
        :desc "Search project"            "p" #'consult-ripgrep
        :desc "Search buffer"             "s" #'consult-line
        :desc "Search project files"      "f" #'consult-find
@@ -1482,7 +1479,6 @@ This function is designed to be called via `emacsclient -e`."
        :desc "Embark act"                "a" #'embark-act
        :desc "Embark dwim"               "d" #'embark-dwim
        :desc "Embark collect"            "c" #'embark-collect))
-
 ;; Saving
 (map! "C-s" #'save-buffer)
 
