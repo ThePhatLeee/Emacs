@@ -35,7 +35,7 @@ keys/ssh/** filter=git-crypt diff=git-crypt
 
 # SSH public keys are OK to leave unencrypted, but encrypt if you want privacy
 # Uncomment to encrypt public keys too:
-# **/*.pub filter=git-crypt diff=git-crypt
+  **/*.pub filter=git-crypt diff=git-crypt
 
 # ─────────────────────────────────────────────────────────────────────────
 # GPG Keys
