@@ -54,7 +54,7 @@
        (shell-command-to-string "pass show personal/fullname"))
       user-mail-address
       (string-trim
-       (shell-command-to-string "pass show personal/email")))
+       (shell-command-to-string "pass show email/gmail-personal/email")))
 (setq auth-sources '("~/.authinfo.gpg" "~/.authinfo")
       auth-source-cache-expiry nil) ; default is 7200 (2h)
 
@@ -85,7 +85,7 @@
 (defun my/preset-gpg-passphrase ()
   "Preset GPG passphrase from pass into gpg-agent cache."
   (interactive)
-  (let* ((passphrase (string-trim (shell-command-to-string "pass show gpg/passphrase")))
+  (let* ((passphrase (string-trim (shell-command-to-string "pass show system/gpg/passphrase")))
          ;; Use the encryption subkey keygrip
          (keygrip "7D56E57856F538345B12F1541961488699871CA2"))
     (when (and passphrase (not (string-empty-p passphrase)))
@@ -580,6 +580,85 @@
   (map! :map org-mode-map
         :localleader
         "a" #'my/archive-done-task))
+
+(defun +calendar/open-calendar ()
+  "Open calfw calendar with org integration."
+  (interactive)
+  (require 'calfw)
+  (require 'calfw-org)
+  
+  ;; Apply Compline faces
+  (custom-set-faces!
+   '(cfw:face-title :foreground "#e0dcd4" :weight bold :height 1.2)
+   '(cfw:face-header :foreground "#b8c4b8" :weight bold)
+   '(cfw:face-sunday :foreground "#cdacac" :weight bold)
+   '(cfw:face-saturday :foreground "#b4c0c8" :weight bold)
+   '(cfw:face-grid :foreground "#282c34")
+   '(cfw:face-today :background "#171a1e" :weight bold)
+   '(cfw:face-select :background "#282c34" :foreground "#f0efeb")
+   '(cfw:face-schedule :foreground "#b8c4b8")
+   '(cfw:face-deadline :foreground "#cdacac"))
+  
+  (calfw-org-open-calendar))
+
+;; Prevent byte-compilation of this function
+(put '+calendar/open-calendar 'byte-compile 'byte-compile-file-form-defmumble)
+
+(after! org
+  (defvar my/contacts-file "~/org/roam/contacts.org")
+  
+  (defun my/contacts-get-emails ()
+    "Extract all emails from contacts.org."
+    (let (contacts)
+      (with-current-buffer (find-file-noselect my/contacts-file)
+        (org-with-wide-buffer
+         (goto-char (point-min))
+         (while (re-search-forward "^\\*+ \\(.+\\)$" nil t)
+           (let ((name (match-string 1))
+                 (email (org-entry-get (point) "EMAIL")))
+             (when email
+               (dolist (addr (split-string email "," t " "))
+                 (push (cons name (string-trim addr)) contacts)))))))
+      (nreverse contacts)))
+  
+  (defun my/contacts-complete ()
+    "Complete email addresses from contacts.org."
+    (let* ((end (point))
+           (start (save-excursion
+                    (skip-chars-backward "^:,; \t\n")
+                    (point)))
+           (contacts (my/contacts-get-emails))
+           (collection (mapcar 
+                       (lambda (contact)
+                         (format "%s <%s>" (car contact) (cdr contact)))
+                       contacts)))
+      (list start end collection :exclusive 'no)))
+  
+  (add-hook 'message-mode-hook
+            (lambda ()
+              (setq-local completion-at-point-functions
+                          (cons 'my/contacts-complete
+                                completion-at-point-functions)))))
+
+(after! mu4e
+  (setq mu4e-compose-complete-addresses nil)
+  
+  (defun my/update-last-contacted ()
+    (when (and (derived-mode-p 'mu4e-compose-mode)
+               mu4e-compose-parent-message)
+      (when-let* ((from (mu4e-message-field mu4e-compose-parent-message :from))
+                  (email (if (stringp from) from (cdar from))))
+        (when (stringp email)
+          (with-current-buffer (find-file-noselect my/contacts-file)
+            (save-excursion
+              (goto-char (point-min))
+              (when (search-forward email nil t)
+                (org-back-to-heading)
+                (org-set-property "LAST_CONTACTED" 
+                                (format-time-string "[%Y-%m-%d %a %H:%M]"))
+                (save-buffer))))))))
+  
+  (add-hook 'mu4e-compose-mode-hook #'my/update-last-contacted))
 
 (use-package! org-roam
   :defer t
@@ -1350,7 +1429,7 @@ This function is designed to be called via `emacsclient -e`."
        :desc "Open elfeed"              "e" #'elfeed
        :desc "Update elfeed"            "u" #'elfeed-update
        :desc "MPV watch video"          "v" #'elfeed-tube-mpv
-       :desc "Open ERC (IRC)"           "r" #'erc
+       :desc "Open ERC (IRC)"           "r" #'my/erc-connect
        :desc "Open EWW Browser"         "w" #'eww
        :desc "Open Elpher"              "l" #'elpher
        :desc "Open Pass"                "p" #'pass
@@ -1984,8 +2063,8 @@ This function is designed to be called via `emacsclient -e`."
 (defun my/erc-connect ()
   "Connect to IRC using credentials from authinfo.gpg."
   (interactive)
-  (let* ((server (string-trim (shell-command-to-string "pass show irc/server")))
-         (nick (string-trim (shell-command-to-string "pass show irc/nick")))
+  (let* ((server (string-trim (shell-command-to-string "pass show services/irc/server")))
+         (nick (string-trim (shell-command-to-string "pass show services/irc/nick")))
          (password (auth-source-pick-first-password :host server :user nick)))
     (if password
         (erc-tls :server server
@@ -2021,11 +2100,20 @@ This function is designed to be called via `emacsclient -e`."
 
 ;; Helper function for quick connection
 (defun my/matrix-connect ()
-  "Connect to Matrix homeserver."
+  "Connect to Matrix using credentials from pass via .authinfo.gpg."
   (interactive)
-  (ement-connect))
+  (let* ((homeserver (string-trim (shell-command-to-string "pass show services/matrix/homeserver")))
+         (username (string-trim (shell-command-to-string "pass show services/matrix/username")))
+         (host (replace-regexp-in-string "https?://" "" 
+                 (replace-regexp-in-string "/.*" "" homeserver)))
+         (user-id (concat "@" username ":" host))
+         (token (auth-source-pick-first-password :host host :user user-id :port "443")))
+    (if token
+        (ement-connect :user-id user-id
+                      :password token
+                      :uri-prefix homeserver)
+      (message "Matrix credentials not found in .authinfo.gpg"))))
 
-;; Helper to view specific room
 (defun my/matrix-room ()
   "View a Matrix room."
   (interactive)
@@ -2044,7 +2132,7 @@ This function is designed to be called via `emacsclient -e`."
   (unless my/signal-phone
     (setq my/signal-phone
           (string-trim
-           (shell-command-to-string "pass show signal/phone")))))
+           (shell-command-to-string "pass show services/signal/phone")))))
 
 ;; Main function - opens gurk-rs in vterm
 (defun my/signal-open ()
