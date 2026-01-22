@@ -8,7 +8,7 @@
     
     # PHP LSP and tools
     phpactor          # PHP LSP
-    phpPackages.phpstan
+    phpstan
     phpPackages.php-cs-fixer
     
     # Debugging
