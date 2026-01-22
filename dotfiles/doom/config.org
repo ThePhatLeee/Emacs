@@ -1623,7 +1623,7 @@ Changes environment to bash for compilation commands (ie. zig-run go-test etc.)
        :desc "Open elfeed"              "e" #'elfeed
        :desc "Update elfeed"            "u" #'elfeed-update
        :desc "MPV watch video"          "v" #'elfeed-tube-mpv
-       :desc "Open ERC (IRC)"           "r" #'erc
+       :desc "Open ERC (IRC)"           "r" #'my/erc-connect
        :desc "Open EWW Browser"         "w" #'eww
        :desc "Open Elpher"              "l" #'elpher
        :desc "Open Pass"                "p" #'pass
