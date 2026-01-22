@@ -66,7 +66,7 @@ This will test our emacs load time and setup. Comment out when not in use!
        (shell-command-to-string "pass show personal/fullname"))
       user-mail-address
       (string-trim
-       (shell-command-to-string "pass show personal/email")))
+       (shell-command-to-string "pass show email/gmail-personal/email")))
 (setq auth-sources '("~/.authinfo.gpg" "~/.authinfo")
       auth-source-cache-expiry nil) ; default is 7200 (2h)
 #+end_src
@@ -107,7 +107,7 @@ This eliminates password prompts when accessing .authinfo.gpg and other encrypte
 (defun my/preset-gpg-passphrase ()
   "Preset GPG passphrase from pass into gpg-agent cache."
   (interactive)
-  (let* ((passphrase (string-trim (shell-command-to-string "pass show gpg/passphrase")))
+  (let* ((passphrase (string-trim (shell-command-to-string "pass show system/gpg/passphrase")))
          ;; Use the encryption subkey keygrip
          (keygrip "7D56E57856F538345B12F1541961488699871CA2"))
     (when (and passphrase (not (string-empty-p passphrase)))
@@ -2317,8 +2317,8 @@ Attempt to get files sent to browser or thunderbird
 (defun my/erc-connect ()
   "Connect to IRC using credentials from authinfo.gpg."
   (interactive)
-  (let* ((server (string-trim (shell-command-to-string "pass show irc/server")))
-         (nick (string-trim (shell-command-to-string "pass show irc/nick")))
+  (let* ((server (string-trim (shell-command-to-string "pass show services/irc/server")))
+         (nick (string-trim (shell-command-to-string "pass show services/irc/nick")))
          (password (auth-source-pick-first-password :host server :user nick)))
     (if password
         (erc-tls :server server
@@ -2357,16 +2357,25 @@ Attempt to get files sent to browser or thunderbird
 
 ;; Helper function for quick connection
 (defun my/matrix-connect ()
-  "Connect to Matrix homeserver."
+  "Connect to Matrix using credentials from pass via .authinfo.gpg."
   (interactive)
-  (ement-connect))
+  (let* ((homeserver (string-trim (shell-command-to-string "pass show services/matrix/homeserver")))
+         (username (string-trim (shell-command-to-string "pass show services/matrix/username")))
+         (host (replace-regexp-in-string "https?://" "" 
+                 (replace-regexp-in-string "/.*" "" homeserver)))
+         (user-id (concat "@" username ":" host))
+         (token (auth-source-pick-first-password :host host :user user-id :port "443")))
+    (if token
+        (ement-connect :user-id user-id
+                      :password token
+                      :uri-prefix homeserver)
+      (message "Matrix credentials not found in .authinfo.gpg"))))
 
-;; Helper to view specific room
 (defun my/matrix-room ()
   "View a Matrix room."
   (interactive)
   (call-interactively #'ement-view-room))
-#+end_src
+   #+end_src
 
 ** Signal (gurk-rs TUI)
 #+begin_src elisp
@@ -2383,7 +2392,7 @@ Attempt to get files sent to browser or thunderbird
   (unless my/signal-phone
     (setq my/signal-phone
           (string-trim
-           (shell-command-to-string "pass show signal/phone")))))
+           (shell-command-to-string "pass show services/signal/phone")))))
 
 ;; Main function - opens gurk-rs in vterm
 (defun my/signal-open ()

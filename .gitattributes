@@ -1,3 +1,74 @@
-dotfiles/doom/private/*.el filter=git-crypt diff=git-crypt
+# ============================================================================
+# Git-Crypt Configuration - Comprehensive Key & Secret Encryption
+# ============================================================================
+
+# ─────────────────────────────────────────────────────────────────────────
+# Application Configs (Sensitive)
+# ─────────────────────────────────────────────────────────────────────────
+# Doom Emacs private configs
+dotfiles/doom/private/** filter=git-crypt diff=git-crypt
+
+# Email sync configuration
+dotfiles/mbsync/** filter=git-crypt diff=git-crypt
+
+# ─────────────────────────────────────────────────────────────────────────
+# Secrets Management
+# ─────────────────────────────────────────────────────────────────────────
+# Agenix encrypted secrets
 secrets/*.age filter=git-crypt diff=git-crypt
+
+# ─────────────────────────────────────────────────────────────────────────
+# SSH Keys (ALL)
+# ─────────────────────────────────────────────────────────────────────────
+# Entire keys/ssh folder
+keys/ssh/** filter=git-crypt diff=git-crypt
+
+# SSH private keys anywhere (backup patterns)
+**/*_rsa filter=git-crypt diff=git-crypt
+**/*_dsa filter=git-crypt diff=git-crypt
+**/*_ecdsa filter=git-crypt diff=git-crypt
+**/*_ed25519 filter=git-crypt diff=git-crypt
+**/id_rsa filter=git-crypt diff=git-crypt
+**/id_dsa filter=git-crypt diff=git-crypt
+**/id_ecdsa filter=git-crypt diff=git-crypt
+**/id_ed25519 filter=git-crypt diff=git-crypt
+
+# SSH public keys are OK to leave unencrypted, but encrypt if you want privacy
+# Uncomment to encrypt public keys too:
+# **/*.pub filter=git-crypt diff=git-crypt
+
+# ─────────────────────────────────────────────────────────────────────────
+# GPG Keys
+# ─────────────────────────────────────────────────────────────────────────
+# Entire keys/gpg folder
+keys/gpg/** filter=git-crypt diff=git-crypt
+
+# GPG private keys anywhere (backup patterns)
+**/*.asc filter=git-crypt diff=git-crypt
+**/*.gpg filter=git-crypt diff=git-crypt
+**/*-private.asc filter=git-crypt diff=git-crypt
+**/*-secret.asc filter=git-crypt diff=git-crypt
+
+# ─────────────────────────────────────────────────────────────────────────
+# Age Keys (Agenix)
+# ─────────────────────────────────────────────────────────────────────────
+# Entire keys/age folder
+keys/age/** filter=git-crypt diff=git-crypt
+
+# Age keys anywhere
+**/keys.txt filter=git-crypt diff=git-crypt
+
+# ─────────────────────────────────────────────────────────────────────────
+# Generic Key Files
+# ─────────────────────────────────────────────────────────────────────────
 *.key filter=git-crypt diff=git-crypt
+*.pem filter=git-crypt diff=git-crypt
+*.p12 filter=git-crypt diff=git-crypt
+*.pfx filter=git-crypt diff=git-crypt
+
+# ─────────────────────────────────────────────────────────────────────────
+# Exceptions (Files that should NOT be encrypted)
+# ─────────────────────────────────────────────────────────────────────────
+# Public keys can stay unencrypted if you prefer
+# keys/ssh/**/*.pub !filter !diff
+# keys/gpg/**/*-public.asc !filter !diff
