@@ -1,0 +1,159 @@
+# ============================================================================
+# Account 1: Gmail Personal
+# ============================================================================
+IMAPAccount gmail-personal
+Host imap.gmail.com
+User jokinenmarko1@gmail.com
+PassCmd "pass show email/mail-personal/app-password"
+SSLType IMAPS
+CertificateFile /etc/ssl/certs/ca-certificates.crt
+
+IMAPStore gmail-personal-remote
+Account gmail-personal
+
+MaildirStore gmail-personal-local
+Path ~/Mail/gmail-personal/
+Inbox ~/Mail/gmail-personal/Inbox
+SubFolders Verbatim
+
+Channel gmail-personal
+Far :gmail-personal-remote:
+Near :gmail-personal-local:
+Patterns * ![Gmail]* "[Gmail]/Sent Mail" "[Gmail]/Drafts" "[Gmail]/Trash" "[Gmail]/All Mail"
+Create Near
+Expunge Both
+SyncState *
+
+# ============================================================================
+# Account 2: Proton Personal (via Bridge)
+# ============================================================================
+IMAPAccount proton-personal
+Host 127.0.0.1
+Port 1143
+User jokinen.marko@proton.me
+PassCmd "pass show email/proton-personal/bridge-password"
+SSLType STARTTLS
+CertificateFile /etc/ssl/certs/ca-certificates.crt
+
+IMAPStore proton-personal-remote
+Account proton-personal
+
+MaildirStore proton-personal-local
+Path ~/Mail/proton-personal/
+Inbox ~/Mail/proton-personal/Inbox
+SubFolders Verbatim
+
+Channel proton-personal
+Far :proton-personal-remote:
+Near :proton-personal-local:
+Patterns *
+Create Near
+Expunge Both
+SyncState *
+
+# ============================================================================
+# Account 3: Proton PM Alias (via Bridge)
+# ============================================================================
+IMAPAccount proton-pm
+Host 127.0.0.1
+Port 1143
+User jokinen.marko@pm.me
+PassCmd "pass show email/proton-pm-alias/bridge-password"
+SSLType STARTTLS
+CertificateFile /etc/ssl/certs/ca-certificates.crt
+
+IMAPStore proton-pm-remote
+Account proton-pm
+
+MaildirStore proton-pm-local
+Path ~/Mail/proton-pm/
+Inbox ~/Mail/proton-pm/Inbox
+SubFolders Verbatim
+
+Channel proton-pm
+Far :proton-pm-remote:
+Near :proton-pm-local:
+Patterns *
+Create Near
+Expunge Both
+SyncState *
+
+# ============================================================================
+# Account 4: Proton Developer (via Bridge)
+# ============================================================================
+IMAPAccount developer
+Host 127.0.0.1
+Port 1143
+User thephatle@proton.me
+PassCmd "pass show email/proton-developer/bridge-password"
+SSLType STARTTLS
+CertificateFile /etc/ssl/certs/ca-certificates.crt
+
+IMAPStore developer-remote
+Account developer
+
+MaildirStore developer-local
+Path ~/Mail/developer/
+Inbox ~/Mail/developer/Inbox
+SubFolders Verbatim
+
+Channel developer
+Far :developer-remote:
+Near :developer-local:
+Patterns *
+Create Near
+Expunge Both
+SyncState *
+
+# ============================================================================
+# Account 5: Company (via Proton Bridge!)
+# ============================================================================
+IMAPAccount company
+Host 127.0.0.1
+Port 1143
+User info@thephatle.dev
+PassCmd "pass show email/company/bridge-password"
+SSLType STARTTLS
+CertificateFile /etc/ssl/certs/ca-certificates.crt
+
+IMAPStore company-remote
+Account company
+
+MaildirStore company-local
+Path ~/Mail/company/
+Inbox ~/Mail/company/Inbox
+SubFolders Verbatim
+
+Channel company
+Far :company-remote:
+Near :company-local:
+Patterns *
+Create Near
+Expunge Both
+SyncState *
+
+# ============================================================================
+# Account 6: Work NW Group
+# ============================================================================
+IMAPAccount work
+Host smtp.nwgroup.asia
+User cto@nwgroup.asia
+PassCmd "pass show email/work-nwgroup/password"
+SSLType IMAPS
+CertificateFile /etc/ssl/certs/ca-certificates.crt
+
+IMAPStore work-remote
+Account work
+
+MaildirStore work-local
+Path ~/Mail/work/
+Inbox ~/Mail/work/Inbox
+SubFolders Verbatim
+
+Channel work
+Far :work-remote:
+Near :work-local:
+Patterns *
+Create Near
+Expunge Both
+SyncState *

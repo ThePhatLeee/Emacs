@@ -79,7 +79,7 @@
   :config
   (setq epg-pinentry-mode 'loopback
         ;; Use your default GPG key
-        epg-user-id "0x09D801B2351193B1"))
+        epg-user-id "09D801B2351193B1"))
 
 ;; Function to preset GPG passphrase from pass
 (defun my/preset-gpg-passphrase ()
@@ -580,85 +580,6 @@
   (map! :map org-mode-map
         :localleader
         "a" #'my/archive-done-task))
-
-(defun +calendar/open-calendar ()
-  "Open calfw calendar with org integration."
-  (interactive)
-  (require 'calfw)
-  (require 'calfw-org)
-  
-  ;; Apply Compline faces
-  (custom-set-faces!
-   '(cfw:face-title :foreground "#e0dcd4" :weight bold :height 1.2)
-   '(cfw:face-header :foreground "#b8c4b8" :weight bold)
-   '(cfw:face-sunday :foreground "#cdacac" :weight bold)
-   '(cfw:face-saturday :foreground "#b4c0c8" :weight bold)
-   '(cfw:face-grid :foreground "#282c34")
-   '(cfw:face-today :background "#171a1e" :weight bold)
-   '(cfw:face-select :background "#282c34" :foreground "#f0efeb")
-   '(cfw:face-schedule :foreground "#b8c4b8")
-   '(cfw:face-deadline :foreground "#cdacac"))
-  
-  (calfw-org-open-calendar))
-
-;; Prevent byte-compilation of this function
-(put '+calendar/open-calendar 'byte-compile 'byte-compile-file-form-defmumble)
-
-(after! org
-  (defvar my/contacts-file "~/org/roam/contacts.org")
-  
-  (defun my/contacts-get-emails ()
-    "Extract all emails from contacts.org."
-    (let (contacts)
-      (with-current-buffer (find-file-noselect my/contacts-file)
-        (org-with-wide-buffer
-         (goto-char (point-min))
-         (while (re-search-forward "^\\*+ \\(.+\\)$" nil t)
-           (let ((name (match-string 1))
-                 (email (org-entry-get (point) "EMAIL")))
-             (when email
-               (dolist (addr (split-string email "," t " "))
-                 (push (cons name (string-trim addr)) contacts)))))))
-      (nreverse contacts)))
-  
-  (defun my/contacts-complete ()
-    "Complete email addresses from contacts.org."
-    (let* ((end (point))
-           (start (save-excursion
-                    (skip-chars-backward "^:,; \t\n")
-                    (point)))
-           (contacts (my/contacts-get-emails))
-           (collection (mapcar 
-                       (lambda (contact)
-                         (format "%s <%s>" (car contact) (cdr contact)))
-                       contacts)))
-      (list start end collection :exclusive 'no)))
-  
-  (add-hook 'message-mode-hook
-            (lambda ()
-              (setq-local completion-at-point-functions
-                          (cons 'my/contacts-complete
-                                completion-at-point-functions)))))
-
-(after! mu4e
-  (setq mu4e-compose-complete-addresses nil)
-  
-  (defun my/update-last-contacted ()
-    (when (and (derived-mode-p 'mu4e-compose-mode)
-               mu4e-compose-parent-message)
-      (when-let* ((from (mu4e-message-field mu4e-compose-parent-message :from))
-                  (email (if (stringp from) from (cdar from))))
-        (when (stringp email)
-          (with-current-buffer (find-file-noselect my/contacts-file)
-            (save-excursion
-              (goto-char (point-min))
-              (when (search-forward email nil t)
-                (org-back-to-heading)
-                (org-set-property "LAST_CONTACTED" 
-                                (format-time-string "[%Y-%m-%d %a %H:%M]"))
-                (save-buffer))))))))
-  
-  (add-hook 'mu4e-compose-mode-hook #'my/update-last-contacted))
 
 (use-package! org-roam
   :defer t
@@ -1313,11 +1234,11 @@ This function is designed to be called via `emacsclient -e`."
 
   ;; Override the command to always use your identity
   (defun agenix--age-command (action file &rest args)
-    (append (list "age" action "--identity" (expand-file-name "~/.ssh/phatlekey") file) args)))
+    (append (list "age" action "--identity" (expand-file-name "~/.ssh/phatle") file) args)))
 
 ;; Spelling
 (setq ispell-program-name "aspell")
-(setq ispell-extra-args '("--sug-mode=ultra" "--lang=en_US"))
+(setq ispell-extra-args '("--sug-mode=ultra" "--lang=en_GB"))
 (setq spell-fu-directory "~/+STORE/dictionary") ;; Please create this directory manually.
 (setq ispell-personal-dictionary "~/+STORE/dictionary/.pws")
 
@@ -2073,7 +1994,7 @@ This function is designed to be called via `emacsclient -e`."
                  :password password)
       (message "IRC password not found in authinfo.gpg"))))
 (setq erc-autojoin-channels-alist
-      '(("libera" "#technicalrenaissance" "#emacs" "#go-nuts" "#systemcrafters" "nixos" ))
+      '(("#technicalrenaissance"))
       erc-track-shorten-start 8
       erc-kill-buffer-on-part t
       erc-auto-query 'bury)
