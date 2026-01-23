@@ -6,7 +6,7 @@
       # Use agent
       use-agent = true;
       # Default key (will be set after key generation)
-       default-key = "09D801B2351193B1";
+       default-key = "E4F558182A1278F2";
     };
   };
 
