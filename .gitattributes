@@ -9,7 +9,7 @@
 dotfiles/doom/private/** filter=git-crypt diff=git-crypt
 
 # Email sync configuration
-dotfiles/mbsync/** filter=git-crypt diff=git-crypt
+dotfiles/doom/mbsync/** filter=git-crypt diff=git-crypt
 
 # ─────────────────────────────────────────────────────────────────────────
 # Secrets Management
