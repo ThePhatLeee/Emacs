@@ -1779,7 +1779,7 @@ Changes environment to bash for compilation commands (ie. zig-run go-test etc.)
   "Start spotifyd daemon."
   (interactive)
   (async-shell-command "spotifyd --no-daemon" "*spotifyd*")
-  (message "Spotifyd started - device: Marko-NixOS"))
+  (message "Spotifyd started - device: phatle-NixOS"))
 
 (defun my/spotifyd-stop ()
   "Stop spotifyd."
@@ -2327,7 +2327,7 @@ Attempt to get files sent to browser or thunderbird
                  :password password)
       (message "IRC password not found in authinfo.gpg"))))
 (setq erc-autojoin-channels-alist
-      '(("#technicalrenaissance"))
+      '(( "libera" "#technicalrenaissance" ))
       erc-track-shorten-start 8
       erc-kill-buffer-on-part t
       erc-auto-query 'bury)
