@@ -101,7 +101,7 @@ This eliminates password prompts when accessing .authinfo.gpg and other encrypte
   :config
   (setq epg-pinentry-mode 'loopback
         ;; Use your default GPG key
-        epg-user-id "09D801B2351193B1"))
+        epg-user-id "E4F558182A1278F2"))
 
 ;; Function to preset GPG passphrase from pass
 (defun my/preset-gpg-passphrase ()
@@ -109,7 +109,7 @@ This eliminates password prompts when accessing .authinfo.gpg and other encrypte
   (interactive)
   (let* ((passphrase (string-trim (shell-command-to-string "pass show system/gpg/passphrase")))
          ;; Use the encryption subkey keygrip
-         (keygrip "7D56E57856F538345B12F1541961488699871CA2"))
+         (keygrip "5CF9AC663BD872DC6A0CE65F25DCBB86AE33171B"))
     (when (and passphrase (not (string-empty-p passphrase)))
       (shell-command 
        (format "echo %s | /run/current-system/sw/bin/gpg-preset-passphrase --preset %s" 
